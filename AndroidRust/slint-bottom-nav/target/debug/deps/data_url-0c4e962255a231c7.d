@@ -1,0 +1,9 @@
+E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-bottom-nav\target\debug\deps\data_url-0c4e962255a231c7.d: C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\forgiving_base64.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\mime.rs
+
+E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-bottom-nav\target\debug\deps\libdata_url-0c4e962255a231c7.rlib: C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\forgiving_base64.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\mime.rs
+
+E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-bottom-nav\target\debug\deps\libdata_url-0c4e962255a231c7.rmeta: C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\forgiving_base64.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\mime.rs
+
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\lib.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\forgiving_base64.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\data-url-0.3.2\src\mime.rs:

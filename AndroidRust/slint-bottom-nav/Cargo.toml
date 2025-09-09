@@ -1,0 +1,26 @@
+[package]
+name = "slint-bottom-nav"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+android-activity = "0.6.0"
+jni = "0.21.1"
+log = "0.4.28"
+slint = { version = "1.13.0", default-features = false, features = ["backend-android-activity-06","compat-1-2", "std"] }
+# material-components = { git = "https://github.com/slint-ui/material-components", branch = "master", optional = true }
+
+[build-dependencies]
+slint-build = "1.13.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.android]
+manifest = "android/AndroidManifest.xml"
+
+[package.metadata.android.signing.release]
+path = "E:\\ProgrammingLang\\Rust\\rust-projects\\AndroidRust\\slint-bottom-nav\\release-keystore.jks"
+keystore_password = "1234567"
+key_alias = "my-alias"
+key_password = "1234567"

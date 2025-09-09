@@ -1,0 +1,15 @@
+cargo:rerun-if-env-changed=ANDROID_JAR
+cargo:rerun-if-env-changed=ANDROID_HOME
+cargo:rerun-if-env-changed=ANDROID_PLATFORM
+cargo:rerun-if-env-changed=ANDROID_API_LEVEL
+cargo:rerun-if-env-changed=ANDROID_SDK_VERSION
+cargo::warning=ANDROID_PLATFORM environment variable is not set, using 'android-36'.
+cargo:rerun-if-env-changed=JAVA_HOME
+cargo:rerun-if-env-changed=JAVA_SOURCE_VERSION
+cargo:rerun-if-env-changed=JAVA_TARGET_VERSION
+cargo:rerun-if-env-changed=ANDROID_D8_JAR
+cargo:rerun-if-env-changed=ANDROID_HOME
+cargo:rerun-if-env-changed=ANDROID_BUILD_TOOLS_VERSION
+cargo::warning=ANDROID_BUILD_TOOLS_VERSION environment variable is not set, using '36.1.0-rc1'.
+cargo:rerun-if-env-changed=JAVA_HOME
+cargo:rerun-if-changed=java/SlintAndroidJavaHelper.java

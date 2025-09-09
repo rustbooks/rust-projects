@@ -1,0 +1,121 @@
+import { Button, VerticalBox, HorizontalBox } from "std-widgets.slint";
+
+// Define NavItem first to avoid reference errors
+component NavItem inherits Rectangle {
+    width: 72px;
+    height: 56px;
+    background: transparent;
+
+    in property <image> icon;
+    in property <string> label;
+    in property <bool> is-selected;
+
+    callback clicked;
+
+    TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    VerticalBox {
+        alignment: center;
+        Image {
+            source: icon;
+            width: 24px;
+            height: 24px;
+            colorize: is-selected ? blue : gray;
+        }
+        Text {
+            text: label;
+            font-size: 12px;
+            color: is-selected ? blue : gray;
+        }
+    }
+}
+
+export component App inherits Window {
+
+    title: "Bottom Navigation App";
+
+    in-out property <string> selected-item: "Home";
+    in-out property <string> dialog-text: "";
+    in-out property <bool> show-dialog: false;
+
+    // Main content and navigation bar
+    VerticalBox {
+        Rectangle {
+            height: parent.height - 56px;
+            background: white;
+            Text {
+                text: "Content for " + selected-item + " screen";
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        Rectangle {
+            background: #dac2c288; // Red to debug size
+    width: parent.width;
+    height: parent.height;
+            HorizontalBox {
+                alignment: center;
+                spacing: 0px;
+
+                NavItem {
+                    icon: @image-url("android/res/mipmap/home.png");
+                    label: "Home";
+                    is-selected: selected-item == "Home";
+                    clicked => {
+                        selected-item = "Home";
+                        dialog-text = "Home Selected";
+                        show-dialog = true;
+                    }
+                }
+
+                NavItem {
+                    icon: @image-url("android/res/mipmap/search.png");
+                    label: "Search";
+                    is-selected: selected-item == "Search";
+                    clicked => {
+                        selected-item = "Search";
+                        dialog-text = "Search Selected";
+                        show-dialog = true;
+                    }
+                }
+
+                NavItem {
+                    icon: @image-url("android/res/mipmap/profile.png");
+                    label: "Profile";
+                    is-selected: selected-item == "Profile";
+                    clicked => {
+                        selected-item = "Profile";
+                        dialog-text = "Profile Selected";
+                        show-dialog = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // Dialog as a top-level Rectangle
+    Rectangle {
+        visible: show-dialog;
+        width: 300px;
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        border-radius: 8px;
+        background: white;
+        border-width: 1px;
+        border-color: gray;
+        VerticalBox {
+            alignment: center;
+            Text {
+                text: dialog-text;
+                horizontal-alignment: center;
+            }
+            Button {
+                text: "OK";
+                clicked => { show-dialog = false; }
+            }
+        }
+    }
+}

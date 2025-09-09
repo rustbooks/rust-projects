@@ -1,0 +1,9 @@
+E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-bottom-nav\target\debug\deps\i_slint_common-351bfbe23969cf7b.d: C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\builtin_structs.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\enums.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\key_codes.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\README.md
+
+E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-bottom-nav\target\debug\deps\libi_slint_common-351bfbe23969cf7b.rmeta: C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\builtin_structs.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\enums.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\key_codes.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\README.md
+
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\lib.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\builtin_structs.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\enums.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\key_codes.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-common-1.13.0\README.md:
