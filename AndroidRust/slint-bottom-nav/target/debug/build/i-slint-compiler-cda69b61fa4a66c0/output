@@ -1,3 +1,0 @@
-cargo:rustc-check-cfg=cfg(slint_debug_property)
-cargo:rerun-if-changed=widgets
-cargo:rustc-env=SLINT_WIDGETS_LIBRARY=E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-bottom-nav\target\debug\build\i-slint-compiler-cda69b61fa4a66c0\out\included_library.rs
