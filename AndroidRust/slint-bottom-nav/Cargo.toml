@@ -18,6 +18,7 @@ crate-type = ["cdylib"]
 
 [package.metadata.android]
 manifest = "android/AndroidManifest.xml"
+assets = "fonts"
 
 [package.metadata.android.signing.release]
 path = "E:\\ProgrammingLang\\Rust\\rust-projects\\AndroidRust\\slint-bottom-nav\\release-keystore.jks"

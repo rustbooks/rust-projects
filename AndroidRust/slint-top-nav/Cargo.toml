@@ -1,0 +1,32 @@
+[package]
+name = "slint-top-nav"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+android-activity = "0.6.0"
+android_logger = "0.15.1"
+jni = "0.21.1"
+log = "0.4.28"
+rusqlite = { version = "0.37.0", features = ["bundled","modern_sqlite"] }
+slint = { version = "1.13.0", default-features = false, features = ["backend-android-activity-06","compat-1-2", "std","renderer-skia"] }
+
+[build-dependencies]
+slint-build = "1.13.0"
+
+[lib]
+crate-type = ["lib","cdylib"]
+
+# [patch.crates-io]
+# rusqlite = { version = "=0.37.0", features = ["bundled"] }
+
+[package.metadata.android]
+manifest = "android/AndroidManifest.xml"
+assets = "assets/icons"
+resources = ["assets/icons"]
+
+[package.metadata.android.signing.release]
+path = "E:\\ProgrammingLang\\Rust\\rust-projects\\AndroidRust\\slint-top-nav\\release-keystore.jks"
+keystore_password = "1234567"
+key_alias = "my-alias"
+key_password = "1234567"

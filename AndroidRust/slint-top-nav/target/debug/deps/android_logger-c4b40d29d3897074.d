@@ -1,0 +1,9 @@
+E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-top-nav\target\debug\deps\android_logger-c4b40d29d3897074.d: C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\arrays.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\config.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\id.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\platform_log_writer.rs
+
+E:\ProgrammingLang\Rust\rust-projects\AndroidRust\slint-top-nav\target\debug\deps\libandroid_logger-c4b40d29d3897074.rmeta: C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\lib.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\arrays.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\config.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\id.rs C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\platform_log_writer.rs
+
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\lib.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\arrays.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\config.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\id.rs:
+C:\Users\aniru\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\android_logger-0.15.1\src\platform_log_writer.rs:
