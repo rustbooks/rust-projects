@@ -1,0 +1,11 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/xkbcommon-6e54053a8d71ebb2.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/compose.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/ffi.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/keysyms.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libxkbcommon-6e54053a8d71ebb2.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/compose.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/ffi.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/keysyms.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libxkbcommon-6e54053a8d71ebb2.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/compose.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/ffi.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/keysyms.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/mod.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/compose.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/ffi.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/xkbcommon-0.9.0/src/xkb/keysyms.rs:

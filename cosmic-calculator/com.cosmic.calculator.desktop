@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=COSMIC Calculator
+Comment=A full-featured calculator for the COSMIC desktop
+Exec=cosmic-calculator
+Icon=accessories-calculator
+Type=Application
+Categories=Utility;Calculator;
+Keywords=calculator;math;converter;programmer;
+StartupNotify=true

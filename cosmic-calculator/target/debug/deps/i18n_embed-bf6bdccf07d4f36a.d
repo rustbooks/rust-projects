@@ -1,0 +1,11 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/i18n_embed-bf6bdccf07d4f36a.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/assets.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/requester.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/util.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/fluent.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libi18n_embed-bf6bdccf07d4f36a.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/assets.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/requester.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/util.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/fluent.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libi18n_embed-bf6bdccf07d4f36a.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/assets.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/requester.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/util.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/fluent.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/assets.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/requester.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/util.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i18n-embed-0.16.0/src/fluent.rs:

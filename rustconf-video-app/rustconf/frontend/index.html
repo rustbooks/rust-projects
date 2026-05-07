@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RustConf – Video Meeting</title>
+  <style>
+    :root {
+      --bg: #0f0f11;
+      --surface: #1a1a1f;
+      --surface2: #242428;
+      --border: #2e2e35;
+      --accent: #e07b39;
+      --accent2: #3a7bd5;
+      --text: #e8e8ec;
+      --muted: #888;
+      --danger: #d94f4f;
+      --success: #3db87a;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* ── LOBBY ─────────────────────────────────────── */
+    #lobby {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; gap: 24px; padding: 24px;
+    }
+    .lobby-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 36px 40px; width: 100%; max-width: 420px;
+    }
+    .lobby-card h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+    .lobby-card p { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .field label { font-size: 13px; color: var(--muted); }
+    .field input {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 10px 14px; font-size: 14px;
+      outline: none; transition: border-color .2s;
+    }
+    .field input:focus { border-color: var(--accent2); }
+    .btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s;
+    }
+    .btn:hover { opacity: .88; }
+    .btn-primary { background: var(--accent2); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger  { background: var(--danger);  color: #fff; }
+    .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+    .tab { flex: 1; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid var(--border); color: var(--muted); transition: all .15s; }
+    .tab.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+    .notice { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--muted); margin-top: 16px; }
+    .notice strong { color: var(--text); }
+    .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; margin: 20px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── MEETING ROOM ───────────────────────────────── */
+    #room { display: none; flex-direction: column; height: 100%; }
+
+    /* Top bar */
+    #topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .meeting-info { display: flex; flex-direction: column; }
+    .meeting-id { font-size: 11px; color: var(--muted); }
+    .meeting-title { font-size: 15px; font-weight: 600; }
+    #timer { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .participants-count { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+
+    /* Main area */
+    #main { display: flex; flex: 1; overflow: hidden; }
+
+    /* Video grid */
+    #grid-container {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 16px; gap: 12px; overflow: hidden;
+    }
+    #video-grid {
+      flex: 1; display: grid; gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+    .video-tile {
+      background: var(--surface2); border-radius: var(--radius); overflow: hidden;
+      position: relative; aspect-ratio: 16/9; min-width: 0;
+    }
+    .video-tile video { width: 100%; height: 100%; object-fit: cover; }
+    .tile-name {
+      position: absolute; bottom: 8px; left: 8px;
+      background: rgba(0,0,0,.65); padding: 3px 8px; border-radius: 6px;
+      font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px;
+    }
+    .tile-name .mute-icon { font-size: 10px; }
+    .tile-self { border: 2px solid var(--accent2); }
+    .tile-speaking { border: 2px solid var(--success); }
+    .video-off-bg {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      background: var(--surface2); font-size: 32px;
+    }
+    .avatar-circle {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--accent2); display: flex; align-items: center;
+      justify-content: center; font-size: 22px; font-weight: 700; color: #fff;
+    }
+
+    /* Screen share overlay */
+    #screenshare-view {
+      display: none; flex: 1; background: #000; border-radius: var(--radius);
+      overflow: hidden; position: relative;
+    }
+    #screenshare-view video { width: 100%; height: 100%; object-fit: contain; }
+    #screenshare-label {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,.7); padding: 5px 14px; border-radius: 20px;
+      font-size: 13px; color: #fff;
+    }
+
+    /* Side panels */
+    .side-panel {
+      width: 280px; background: var(--surface); border-left: 1px solid var(--border);
+      display: none; flex-direction: column;
+    }
+    .side-panel.open { display: flex; }
+    .panel-header {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .panel-header button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; }
+
+    /* Participants panel */
+    #participants-list { flex: 1; overflow-y: auto; padding: 8px; }
+    .participant-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+      border-radius: 8px; transition: background .15s;
+    }
+    .participant-item:hover { background: var(--surface2); }
+    .participant-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent2); display: flex; align-items: center;
+      justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+    .participant-info { flex: 1; }
+    .participant-name { font-size: 13px; font-weight: 500; }
+    .participant-role { font-size: 11px; color: var(--muted); }
+    .host-controls { display: flex; gap: 4px; }
+    .icon-btn {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      padding: 4px 6px; border-radius: 6px; font-size: 14px; transition: all .15s;
+    }
+    .icon-btn:hover { background: var(--surface2); color: var(--text); }
+    .icon-btn.danger:hover { background: var(--danger); color: #fff; }
+    .badge {
+      font-size: 10px; padding: 2px 6px; border-radius: 4px;
+      background: var(--accent); color: #fff; font-weight: 600;
+    }
+
+    /* Chat panel */
+    #chat-messages { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { max-width: 100%; }
+    .chat-msg-header { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .chat-msg-body { background: var(--surface2); border-radius: 8px; padding: 8px 12px; font-size: 13px; line-height: 1.5; }
+    .chat-msg.mine .chat-msg-body { background: rgba(58,123,213,.2); border: 1px solid rgba(58,123,213,.35); }
+    .chat-msg.private .chat-msg-body { background: rgba(224,123,57,.1); border: 1px solid rgba(224,123,57,.3); }
+    .chat-input-row { padding: 10px 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .chat-input-row input {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none;
+    }
+    .chat-input-row input:focus { border-color: var(--accent2); }
+    .chat-send-btn {
+      background: var(--accent2); border: none; color: #fff; border-radius: 8px;
+      padding: 8px 14px; font-size: 13px; cursor: pointer;
+    }
+
+    /* Bottom controls */
+    #controls {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 20px; background: var(--surface); border-top: 1px solid var(--border);
+      flex-shrink: 0; flex-wrap: wrap;
+    }
+    .ctrl-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 12px; padding: 10px 16px; font-size: 11px; cursor: pointer;
+      min-width: 64px; transition: all .15s;
+    }
+    .ctrl-btn .icon { font-size: 20px; }
+    .ctrl-btn:hover { background: var(--border); }
+    .ctrl-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+    .ctrl-btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+    .ctrl-btn.end { background: var(--danger); border-color: var(--danger); color: #fff; min-width: 100px; }
+
+    /* Toasts */
+    #toasts { position: fixed; bottom: 100px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 999; }
+    .toast {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 16px; font-size: 13px; max-width: 300px;
+      animation: slideIn .2s ease; box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    }
+    @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .side-panel { width: 100%; position: fixed; bottom: 76px; top: 64px; right: 0; }
+      #topbar { padding: 8px 12px; }
+      .ctrl-btn { padding: 8px 12px; font-size: 10px; min-width: 56px; }
+      #video-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOBBY ══════════ -->
+<div id="lobby">
+  <div class="lobby-card">
+    <h1>🦀 RustConf</h1>
+    <p>Fast, secure video meetings — powered by Rust</p>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-host" onclick="switchTab('host')">Host Meeting</button>
+      <button class="tab" id="tab-join" onclick="switchTab('join')">Join Meeting</button>
+    </div>
+
+    <!-- HOST TAB -->
+    <div id="host-form">
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="host-name" placeholder="e.g. Priya Sharma" />
+      </div>
+      <div class="field">
+        <label>Meeting title (optional)</label>
+        <input type="text" id="meeting-title" placeholder="e.g. Q3 Review" />
+      </div>
+      <button class="btn btn-success" onclick="createMeeting()">Create & Start Meeting</button>
+      <div id="created-notice" class="notice" style="display:none">
+        Meeting created! Share these with participants:<br>
+        <strong id="share-mid"></strong><br>
+        Passkey: <strong id="share-passkey"></strong>
+      </div>
+    </div>
+
+    <!-- JOIN TAB -->
+    <div id="join-form" style="display:none">
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="join-name" placeholder="e.g. Ravi Kumar" />
+      </div>
+      <div class="field">
+        <label>Meeting ID</label>
+        <input type="text" id="join-mid" placeholder="Paste meeting ID" />
+      </div>
+      <div class="field">
+        <label>Passkey</label>
+        <input type="text" id="join-passkey" placeholder="6-digit passkey" maxlength="6" />
+      </div>
+      <button class="btn btn-primary" onclick="joinMeeting()">Join Meeting</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MEETING ROOM ══════════ -->
+<div id="room">
+
+  <!-- Top bar -->
+  <div id="topbar">
+    <div class="meeting-info">
+      <div class="meeting-title" id="room-title">Meeting</div>
+      <div class="meeting-id" id="room-mid"></div>
+    </div>
+    <div id="timer">00:00</div>
+    <div class="participants-count">👥 <span id="peer-count">1</span></div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+    <!-- Video area -->
+    <div id="grid-container">
+      <div id="screenshare-view">
+        <video id="screenshare-video" autoplay playsinline></video>
+        <div id="screenshare-label">Screen sharing</div>
+      </div>
+      <div id="video-grid"></div>
+    </div>
+
+    <!-- Participants sidebar -->
+    <div class="side-panel" id="participants-panel">
+      <div class="panel-header">
+        Participants (<span id="panel-count">1</span>)
+        <button onclick="togglePanel('participants-panel')">✕</button>
+      </div>
+      <div id="participants-list"></div>
+    </div>
+
+    <!-- Chat sidebar -->
+    <div class="side-panel" id="chat-panel">
+      <div class="panel-header">
+        Chat
+        <button onclick="togglePanel('chat-panel')">✕</button>
+      </div>
+      <div id="chat-messages"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="Message everyone…" onkeydown="chatKeyDown(event)" />
+        <button class="chat-send-btn" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom controls -->
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()">
+      <span class="icon" id="mic-icon">🎙️</span>
+      <span id="mic-label">Mute</span>
+    </button>
+    <button class="ctrl-btn" id="btn-cam" onclick="toggleCam()">
+      <span class="icon" id="cam-icon">📷</span>
+      <span id="cam-label">Cam Off</span>
+    </button>
+    <button class="ctrl-btn" id="btn-screen" onclick="toggleScreen()">
+      <span class="icon">🖥️</span>
+      <span>Share Screen</span>
+    </button>
+    <button class="ctrl-btn" id="btn-participants" onclick="togglePanel('participants-panel')">
+      <span class="icon">👥</span>
+      <span>People</span>
+    </button>
+    <button class="ctrl-btn" id="btn-chat" onclick="togglePanel('chat-panel')">
+      <span class="icon">💬</span>
+      <span id="chat-label">Chat</span>
+    </button>
+    <button class="ctrl-btn end" onclick="leaveMeeting()">
+      <span class="icon">📵</span>
+      <span>Leave</span>
+    </button>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div id="toasts"></div>
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+const API = window.location.origin; // Same origin
+
+// ── App state ────────────────────────────────────────────────────────────────
+let myPeerId = null, myRole = null, myToken = null, myName = null;
+let meetingId = null;
+let localStream = null, screenStream = null;
+let isScreenSharing = false, isMicOn = true, isCamOn = true;
+let ws = null;
+let peerConnections = {}; // peerId → RTCPeerConnection
+let roomStartTime = null;
+let timerInterval = null;
+let participants = new Map();
+
+// ── Tab switcher ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('host-form').style.display = tab === 'host' ? '' : 'none';
+  document.getElementById('join-form').style.display = tab === 'join'  ? '' : 'none';
+  document.getElementById('tab-host').className = 'tab' + (tab === 'host' ? ' active' : '');
+  document.getElementById('tab-join').className = 'tab' + (tab === 'join' ? ' active' : '');
+}
+
+// ── Create meeting ────────────────────────────────────────────────────────────
+async function createMeeting() {
+  const name = document.getElementById('host-name').value.trim();
+  const title = document.getElementById('meeting-title').value.trim();
+  if (!name) return toast('Enter your name first');
+
+  try {
+    const res = await fetch(`${API}/api/meetings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ host_name: name, title: title || undefined }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    document.getElementById('created-notice').style.display = '';
+    document.getElementById('share-mid').textContent = `Meeting ID: ${data.meeting_id}`;
+    document.getElementById('share-passkey').textContent = data.passkey;
+
+    myPeerId = data.host_token ? parseJwt(data.host_token).sub : null;
+    myRole = 'host';
+    myToken = data.host_token;
+    myName = name;
+    meetingId = data.meeting_id;
+
+    await enterRoom(data.meeting_id, title || 'My Meeting');
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+// ── Join meeting ──────────────────────────────────────────────────────────────
+async function joinMeeting() {
+  const name = document.getElementById('join-name').value.trim();
+  const mid = document.getElementById('join-mid').value.trim();
+  const passkey = document.getElementById('join-passkey').value.trim();
+  if (!name || !mid || !passkey) return toast('Fill in all fields');
+
+  try {
+    const res = await fetch(`${API}/api/meetings/${mid}/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: name, passkey }),
+    });
+    if (res.status === 401) return toast('Wrong passkey', true);
+    if (res.status === 410) return toast('Meeting has ended', true);
+    if (res.status === 413) return toast('Meeting is full (300 max)', true);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+
+    myPeerId = data.peer_id;
+    myRole = data.role;
+    myToken = data.token;
+    myName = data.display_name;
+    meetingId = data.meeting_id;
+
+    await enterRoom(data.meeting_id, 'Meeting');
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+// ── Enter room ────────────────────────────────────────────────────────────────
+async function enterRoom(mid, title) {
+  // Request camera + mic
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  } catch {
+    toast('Could not access camera/mic');
+    localStream = new MediaStream();
+  }
+
+  // Switch UI
+  document.getElementById('lobby').style.display = 'none';
+  document.getElementById('room').style.display = 'flex';
+  document.getElementById('room-title').textContent = title;
+  document.getElementById('room-mid').textContent = `ID: ${mid}`;
+
+  // Self tile
+  addVideoTile(myPeerId, myName + ' (You)', localStream, true);
+
+  // Start timer
+  roomStartTime = Date.now();
+  timerInterval = setInterval(updateTimer, 1000);
+
+  // Connect WebSocket
+  connectWs(mid);
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
+function connectWs(mid) {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws/${mid}/${myPeerId}?token=${encodeURIComponent(myToken)}`);
+
+  ws.onopen = () => toast('Connected to meeting');
+
+  ws.onmessage = async (ev) => {
+    const msg = JSON.parse(ev.data);
+    await handleServerMsg(msg);
+  };
+
+  ws.onclose = () => {
+    toast('Disconnected – reconnecting…');
+    setTimeout(() => connectWs(mid), 2000);
+  };
+
+  ws.onerror = () => toast('Connection error', true);
+}
+
+async function handleServerMsg(msg) {
+  switch (msg.type) {
+    case 'welcome':
+      break;
+
+    case 'participant_joined':
+      addParticipantItem(msg.peer_id, msg.display_name, msg.role);
+      toast(`${msg.display_name} joined`);
+      // Initiate WebRTC offer if we are host / already present
+      if (msg.peer_id !== myPeerId) await startPeerConnection(msg.peer_id, true);
+      break;
+
+    case 'participant_left':
+      removeParticipant(msg.peer_id);
+      break;
+
+    case 'participant_list':
+      for (const p of msg.participants) {
+        if (p.peer_id !== myPeerId) {
+          addParticipantItem(p.peer_id, p.display_name, p.role);
+        }
+      }
+      updateCounts();
+      break;
+
+    case 'sdp_offer':
+      await handleRemoteOffer(msg.from, msg.sdp);
+      break;
+
+    case 'sdp_answer':
+      if (peerConnections[msg.from]) {
+        await peerConnections[msg.from].setRemoteDescription({ type: 'answer', sdp: msg.sdp });
+      }
+      break;
+
+    case 'ice_candidate':
+      if (peerConnections[msg.from]) {
+        try {
+          await peerConnections[msg.from].addIceCandidate({
+            candidate: msg.candidate, sdpMid: msg.sdp_mid, sdpMLineIndex: msg.sdp_m_line_index
+          });
+        } catch {}
+      }
+      break;
+
+    case 'muted':
+      if (msg.peer_id === myPeerId) forceMuteLocal();
+      updateParticipantMuted(msg.peer_id, true);
+      break;
+
+    case 'unmuted':
+      updateParticipantMuted(msg.peer_id, false);
+      break;
+
+    case 'kicked':
+      if (msg.peer_id === myPeerId) {
+        alert('You were removed from the meeting.');
+        leaveMeeting();
+      } else {
+        removeParticipant(msg.peer_id);
+      }
+      break;
+
+    case 'promoted':
+      if (msg.peer_id === myPeerId) {
+        myRole = 'host';
+        toast('You are now a host');
+        rerenderParticipants();
+      }
+      break;
+
+    case 'chat':
+      renderChat(msg);
+      break;
+
+    case 'error':
+      toast(msg.message, true);
+      break;
+  }
+}
+
+// ── WebRTC peer connections ───────────────────────────────────────────────────
+async function startPeerConnection(remotePeerId, isInitiator) {
+  const pc = new RTCPeerConnection({
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      // Add TURN here for production NAT traversal:
+      // { urls: 'turn:your-turn-server:3478', username: 'user', credential: 'pass' }
+    ],
+  });
+
+  peerConnections[remotePeerId] = pc;
+
+  // Add local tracks
+  for (const track of localStream.getTracks()) {
+    pc.addTrack(track, localStream);
+  }
+
+  // On remote track → show video tile
+  pc.ontrack = (ev) => {
+    const stream = ev.streams[0];
+    const name = participants.get(remotePeerId)?.name || remotePeerId;
+    addVideoTile(remotePeerId, name, stream, false);
+  };
+
+  // ICE candidates
+  pc.onicecandidate = (ev) => {
+    if (ev.candidate) {
+      wsSend({
+        type: 'ice_candidate',
+        candidate: ev.candidate.candidate,
+        sdp_mid: ev.candidate.sdpMid,
+        sdp_m_line_index: ev.candidate.sdpMLineIndex,
+      });
+    }
+  };
+
+  if (isInitiator) {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    wsSend({ type: 'sdp_offer', sdp: offer.sdp });
+  }
+
+  return pc;
+}
+
+async function handleRemoteOffer(fromPeerId, sdp) {
+  let pc = peerConnections[fromPeerId];
+  if (!pc) pc = await startPeerConnection(fromPeerId, false);
+
+  await pc.setRemoteDescription({ type: 'offer', sdp });
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  wsSend({ type: 'sdp_answer', sdp: answer.sdp });
+}
+
+// ── Video tiles ───────────────────────────────────────────────────────────────
+function addVideoTile(peerId, name, stream, isSelf) {
+  const grid = document.getElementById('video-grid');
+  let tile = document.getElementById(`tile-${peerId}`);
+  if (!tile) {
+    tile = document.createElement('div');
+    tile.className = 'video-tile' + (isSelf ? ' tile-self' : '');
+    tile.id = `tile-${peerId}`;
+    tile.innerHTML = `
+      <video id="vid-${peerId}" autoplay playsinline ${isSelf ? 'muted' : ''}></video>
+      <div class="tile-name"><span>${name}</span><span class="mute-icon" id="mute-${peerId}"></span></div>
+    `;
+    grid.appendChild(tile);
+  }
+  const vid = document.getElementById(`vid-${peerId}`);
+  if (vid) vid.srcObject = stream;
+}
+
+function removeVideoTile(peerId) {
+  document.getElementById(`tile-${peerId}`)?.remove();
+}
+
+// ── Participant list ──────────────────────────────────────────────────────────
+function addParticipantItem(peerId, name, role) {
+  participants.set(peerId, { name, role });
+  rerenderParticipants();
+}
+
+function removeParticipant(peerId) {
+  participants.delete(peerId);
+  removeVideoTile(peerId);
+  peerConnections[peerId]?.close();
+  delete peerConnections[peerId];
+  rerenderParticipants();
+}
+
+function rerenderParticipants() {
+  const list = document.getElementById('participants-list');
+  const meEntry = { name: myName, role: myRole };
+  const allPeers = [[myPeerId, meEntry], ...participants.entries()];
+  list.innerHTML = allPeers.map(([pid, p]) => {
+    const isMe = pid === myPeerId;
+    const hostBadge = p.role === 'host' ? '<span class="badge">Host</span>' : '';
+    const controls = (myRole === 'host' && !isMe) ? `
+      <div class="host-controls">
+        <button class="icon-btn" title="Mute" onclick="hostMute('${pid}')">🔇</button>
+        <button class="icon-btn" title="Make host" onclick="hostPromote('${pid}')">⬆️</button>
+        <button class="icon-btn danger" title="Remove" onclick="hostKick('${pid}')">❌</button>
+      </div>` : '';
+    return `<div class="participant-item">
+      <div class="participant-avatar">${p.name[0]?.toUpperCase()}</div>
+      <div class="participant-info">
+        <div class="participant-name">${p.name} ${hostBadge} ${isMe ? '(You)' : ''}</div>
+        <div class="participant-role">${p.role}</div>
+      </div>
+      ${controls}
+    </div>`;
+  }).join('');
+  updateCounts();
+}
+
+function updateParticipantMuted(peerId, muted) {
+  const icon = document.getElementById(`mute-${peerId}`);
+  if (icon) icon.textContent = muted ? '🔇' : '';
+}
+
+function updateCounts() {
+  const n = participants.size + 1;
+  document.getElementById('peer-count').textContent = n;
+  document.getElementById('panel-count').textContent = n;
+}
+
+// ── Host controls ─────────────────────────────────────────────────────────────
+async function hostApi(endpoint) {
+  await fetch(`${API}/api/meetings/${meetingId}/${endpoint}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${myToken}` },
+  });
+}
+function hostMute(peerId)    { hostApi(`mute/${peerId}`);    }
+function hostKick(peerId)    { hostApi(`kick/${peerId}`);    }
+function hostPromote(peerId) { hostApi(`promote/${peerId}`); }
+
+// ── Local media controls ──────────────────────────────────────────────────────
+function toggleMic() {
+  isMicOn = !isMicOn;
+  localStream.getAudioTracks().forEach(t => t.enabled = isMicOn);
+  document.getElementById('mic-icon').textContent  = isMicOn ? '🎙️' : '🔇';
+  document.getElementById('mic-label').textContent = isMicOn ? 'Mute' : 'Unmute';
+  document.getElementById('btn-mic').className = 'ctrl-btn' + (isMicOn ? '' : ' active');
+}
+
+function toggleCam() {
+  isCamOn = !isCamOn;
+  localStream.getVideoTracks().forEach(t => t.enabled = isCamOn);
+  document.getElementById('cam-icon').textContent  = isCamOn ? '📷' : '🚫';
+  document.getElementById('cam-label').textContent = isCamOn ? 'Cam Off' : 'Cam On';
+  document.getElementById('btn-cam').className = 'ctrl-btn' + (!isCamOn ? ' active' : '');
+}
+
+function forceMuteLocal() {
+  if (isMicOn) { isMicOn = false; localStream.getAudioTracks().forEach(t => t.enabled = false); }
+  toast('You were muted by the host');
+}
+
+async function toggleScreen() {
+  if (!isScreenSharing) {
+    try {
+      screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      const sv = document.getElementById('screenshare-view');
+      document.getElementById('screenshare-video').srcObject = screenStream;
+      sv.style.display = 'block';
+      isScreenSharing = true;
+
+      // Replace video track in all peer connections
+      const track = screenStream.getVideoTracks()[0];
+      for (const pc of Object.values(peerConnections)) {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) sender.replaceTrack(track);
+      }
+
+      screenStream.getVideoTracks()[0].onended = () => stopScreenShare();
+      toast('Screen sharing started');
+    } catch {
+      toast('Screen share cancelled');
+    }
+  } else {
+    stopScreenShare();
+  }
+}
+
+function stopScreenShare() {
+  screenStream?.getTracks().forEach(t => t.stop());
+  document.getElementById('screenshare-view').style.display = 'none';
+  isScreenSharing = false;
+
+  // Restore camera track
+  const track = localStream.getVideoTracks()[0];
+  if (track) {
+    for (const pc of Object.values(peerConnections)) {
+      const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+      if (sender) sender.replaceTrack(track);
+    }
+  }
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+function chatKeyDown(e) { if (e.key === 'Enter') sendChat(); }
+
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !ws) return;
+  wsSend({ type: 'chat', text, to: null });
+  input.value = '';
+}
+
+function renderChat(msg) {
+  const el = document.createElement('div');
+  el.className = 'chat-msg' + (msg.from === myPeerId ? ' mine' : '') + (msg.private ? ' private' : '');
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  el.innerHTML = `
+    <div class="chat-msg-header">${msg.from_name} · ${time}${msg.private ? ' · Private' : ''}</div>
+    <div class="chat-msg-body">${escapeHtml(msg.text)}</div>
+  `;
+  const box = document.getElementById('chat-messages');
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+
+  // Show unread badge
+  if (!document.getElementById('chat-panel').classList.contains('open')) {
+    document.getElementById('chat-label').textContent = '💬 •';
+  }
+}
+
+// ── Panels ────────────────────────────────────────────────────────────────────
+function togglePanel(id) {
+  const panel = document.getElementById(id);
+  const isOpen = panel.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.side-panel').forEach(p => p.classList.remove('open'));
+  if (!isOpen) panel.classList.add('open');
+  if (id === 'chat-panel') document.getElementById('chat-label').textContent = '💬';
+}
+
+// ── Leave meeting ─────────────────────────────────────────────────────────────
+function leaveMeeting() {
+  ws?.close();
+  Object.values(peerConnections).forEach(pc => pc.close());
+  peerConnections = {};
+  localStream?.getTracks().forEach(t => t.stop());
+  screenStream?.getTracks().forEach(t => t.stop());
+  clearInterval(timerInterval);
+  document.getElementById('room').style.display = 'none';
+  document.getElementById('lobby').style.display = 'flex';
+  document.getElementById('video-grid').innerHTML = '';
+  participants.clear();
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function updateTimer() {
+  const secs = Math.floor((Date.now() - roomStartTime) / 1000);
+  const m = Math.floor(secs / 60).toString().padStart(2, '0');
+  const s = (secs % 60).toString().padStart(2, '0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function wsSend(obj) { if (ws?.readyState === 1) ws.send(JSON.stringify(obj)); }
+
+function parseJwt(token) {
+  try { return JSON.parse(atob(token.split('.')[1])); } catch { return {}; }
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function toast(msg, err = false) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.borderColor = err ? 'var(--danger)' : 'var(--border)';
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+</script>
+</body>
+</html>

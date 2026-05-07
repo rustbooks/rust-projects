@@ -1,0 +1,58 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    restart: unless-stopped
+    environment:
+      - RUST_LOG=info
+      - DATABASE_URL=sqlite:///data/data.db
+      - JWT_SECRET=${JWT_SECRET:-change-me-to-64-random-chars-in-prod}
+      - BIND_ADDR=0.0.0.0:3000
+    volumes:
+      - sqlite-data:/data
+      - ./frontend:/app/frontend:ro   # serve pre-built frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/certs:/etc/nginx/certs:ro      # put your TLS certs here
+    depends_on:
+      - app
+    networks:
+      - internal
+
+  # TURN server for NAT traversal (required for clients behind strict NAT)
+  coturn:
+    image: coturn/coturn:latest
+    restart: unless-stopped
+    network_mode: host              # TURN must be on host network
+    command: >
+      -n
+      --log-file=stdout
+      --lt-cred-mech
+      --fingerprint
+      --no-multicast-peers
+      --realm=rustconf.example.com
+      --user=${TURN_USER:-rustconf}:${TURN_PASS:-secretpass}
+      --listening-port=3478
+      --min-port=49152
+      --max-port=65535
+
+volumes:
+  sqlite-data:
+
+networks:
+  internal:
+    driver: bridge

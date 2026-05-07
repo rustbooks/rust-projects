@@ -1,0 +1,52 @@
+[package]
+name = "rustconf-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP server + WebSocket
+axum = { version = "0.7", features = ["ws", "multipart"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "fs", "trace"] }
+hyper = { version = "1", features = ["full"] }
+
+# WebRTC (pure Rust SFU core)
+str0m = "0.6"
+
+# Database (SQLite, zero external server)
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "migrate", "uuid"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Auth
+jsonwebtoken = "9"
+bcrypt = "0.15"
+
+# IDs + time
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# Crypto (passkey hashing)
+sha2 = "0.10"
+hex = "0.4"
+rand = "0.8"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Config
+dotenvy = "0.15"
+anyhow = "1"
+thiserror = "1"
+
+# Dashmap for concurrent in-memory state
+dashmap = "5"
+
+[dev-dependencies]
+tokio-test = "0.4"

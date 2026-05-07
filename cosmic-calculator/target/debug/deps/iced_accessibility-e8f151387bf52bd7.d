@@ -1,0 +1,11 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/iced_accessibility-e8f151387bf52bd7.d: /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/lib.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/a11y_tree.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/id.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/node.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/traits.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libiced_accessibility-e8f151387bf52bd7.rlib: /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/lib.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/a11y_tree.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/id.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/node.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/traits.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libiced_accessibility-e8f151387bf52bd7.rmeta: /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/lib.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/a11y_tree.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/id.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/node.rs /home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/traits.rs
+
+/home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/lib.rs:
+/home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/a11y_tree.rs:
+/home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/id.rs:
+/home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/node.rs:
+/home/tech/.cargo/git/checkouts/libcosmic-41009aea1d72760b/03d0171/iced/accessibility/src/traits.rs:

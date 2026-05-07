@@ -1,0 +1,11 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/ordered_stream-e5237147ca1df990.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/adapters.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/join.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/multi.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/../README.md
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libordered_stream-e5237147ca1df990.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/adapters.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/join.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/multi.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/../README.md
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libordered_stream-e5237147ca1df990.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/adapters.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/join.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/multi.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/../README.md
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/adapters.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/join.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/multi.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ordered-stream-0.2.0/src/../README.md:

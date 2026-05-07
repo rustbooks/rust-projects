@@ -1,0 +1,12 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/async_io-be680e4e4ac0df6d.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/driver.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os/unix.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor/unix.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libasync_io-be680e4e4ac0df6d.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/driver.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os/unix.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor/unix.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libasync_io-be680e4e4ac0df6d.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/driver.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os/unix.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor/unix.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/driver.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/os/unix.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/async-io-2.6.0/src/reactor/unix.rs:

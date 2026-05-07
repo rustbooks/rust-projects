@@ -1,0 +1,10 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/fluent_langneg-eaa1f9e85dcd15fe.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/accepted_languages.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/likely_subtags.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libfluent_langneg-eaa1f9e85dcd15fe.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/accepted_languages.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/likely_subtags.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libfluent_langneg-eaa1f9e85dcd15fe.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/accepted_languages.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/likely_subtags.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/accepted_languages.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/mod.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/fluent-langneg-0.13.1/src/negotiate/likely_subtags.rs:

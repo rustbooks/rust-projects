@@ -1,0 +1,12 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/drm_ffi-821c2f988fe992cc.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/utils.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/gem.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/ioctl.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/mode.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/syncobj.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libdrm_ffi-821c2f988fe992cc.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/utils.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/gem.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/ioctl.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/mode.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/syncobj.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libdrm_ffi-821c2f988fe992cc.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/utils.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/gem.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/ioctl.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/mode.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/syncobj.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/utils.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/gem.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/ioctl.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/mode.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/drm-ffi-0.7.1/src/syncobj.rs:

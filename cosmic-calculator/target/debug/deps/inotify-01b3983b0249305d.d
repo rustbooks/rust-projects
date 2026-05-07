@@ -1,0 +1,12 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/inotify-01b3983b0249305d.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/events.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/fd_guard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/inotify.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/util.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/watches.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libinotify-01b3983b0249305d.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/events.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/fd_guard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/inotify.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/util.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/watches.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libinotify-01b3983b0249305d.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/events.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/fd_guard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/inotify.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/util.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/watches.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/events.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/fd_guard.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/inotify.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/util.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/inotify-0.11.1/src/watches.rs:

@@ -1,0 +1,35 @@
+# ── Builder ───────────────────────────────────────────────────────────────────
+FROM rust:1.79-slim AS builder
+
+# System deps for sqlx (OpenSSL, pkg-config)
+RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Cache Cargo dependencies
+COPY Cargo.toml Cargo.toml
+COPY backend/Cargo.toml backend/Cargo.toml
+RUN mkdir -p backend/src && echo 'fn main(){}' > backend/src/main.rs
+RUN cargo build --release -p rustconf-backend 2>/dev/null || true
+
+# Build for real
+COPY . .
+ENV SQLX_OFFLINE=true
+RUN cargo build --release -p rustconf-backend
+
+# ── Runtime ───────────────────────────────────────────────────────────────────
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y ca-certificates libssl3 && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /app/target/release/rustconf-backend /usr/local/bin/rustconf-backend
+COPY migrations /app/migrations
+COPY frontend   /app/frontend
+
+RUN mkdir -p /data
+
+EXPOSE 3000
+
+CMD ["rustconf-backend"]

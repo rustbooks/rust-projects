@@ -1,0 +1,12 @@
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/accesskit_consumer-41e14f4e28c693fe.d: /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/lib.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/tree.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/node.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/filters.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/iterators.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/text.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libaccesskit_consumer-41e14f4e28c693fe.rlib: /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/lib.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/tree.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/node.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/filters.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/iterators.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/text.rs
+
+/home/tech/Documents/rust-projects/cosmic-calculator/target/debug/deps/libaccesskit_consumer-41e14f4e28c693fe.rmeta: /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/lib.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/tree.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/node.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/filters.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/iterators.rs /home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/text.rs
+
+/home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/lib.rs:
+/home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/tree.rs:
+/home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/node.rs:
+/home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/filters.rs:
+/home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/iterators.rs:
+/home/tech/.cargo/git/checkouts/accesskit-c5e0fd64a779e7b6/f0599ee/consumer/src/text.rs:
