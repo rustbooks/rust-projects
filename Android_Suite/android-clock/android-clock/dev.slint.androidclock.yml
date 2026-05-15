@@ -1,0 +1,53 @@
+# dev.slint.androidclock.yml
+# ============================================================================
+# Flatpak Manifest for Flathub Distribution
+# ============================================================================
+# Build: flatpak-builder build-dir dev.slint.androidclock.yml --force-clean
+# Test:  flatpak-builder --run build-dir dev.slint.androidclock.yml android-clock
+# Submit to Flathub: https://github.com/flathub/flathub
+
+app-id: dev.slint.androidclock
+runtime: org.freedesktop.Platform
+runtime-version: "23.08"
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+
+command: android-clock
+
+finish-args:
+  # Wayland + X11 display access
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  # Audio (for alarm sounds)
+  - --socket=pulseaudio
+  # DRI for GPU acceleration
+  - --device=dri
+  # Home directory for saving state
+  - --filesystem=xdg-data/android-clock:create
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  env:
+    CARGO_HOME: /run/build/android-clock/cargo
+    RUST_BACKTRACE: "1"
+
+modules:
+  - name: android-clock
+    buildsystem: simple
+    build-commands:
+      - cargo build --release --offline
+      - install -Dm755 target/release/android-clock /app/bin/android-clock
+      - install -Dm644 assets/dev.slint.androidclock.desktop /app/share/applications/dev.slint.androidclock.desktop
+      - install -Dm644 assets/icons/512x512/dev.slint.androidclock.png /app/share/icons/hicolor/512x512/apps/dev.slint.androidclock.png
+      - install -Dm644 assets/dev.slint.androidclock.metainfo.xml /app/share/metainfo/dev.slint.androidclock.metainfo.xml
+    sources:
+      - type: dir
+        path: .
+      - type: shell
+        commands:
+          - cargo vendor --sync Cargo.toml > /dev/null
+      - type: dir
+        path: vendor
+        dest: vendor

@@ -1,0 +1,85 @@
+// android/app/build.gradle
+// ─────────────────────────────────────────────────────────────────────────────
+// Android Gradle build script.
+// After `cargo build --release --target aarch64-linux-android`, copy the .so:
+//
+//   cp target/aarch64-linux-android/release/librust_dialer.so \
+//      android/app/src/main/jniLibs/arm64-v8a/
+//
+// Then run `./gradlew assembleRelease` from the android/ directory.
+// ─────────────────────────────────────────────────────────────────────────────
+
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace          'com.rustdialer.app'
+    compileSdk          34
+
+    defaultConfig {
+        applicationId  'com.rustdialer.app'
+        minSdk          26          // Android 8.0 — covers >95% of active devices
+        targetSdk       34
+        versionCode     1
+        versionName     '1.0.0'
+
+        // ABI splits — produce separate APKs per architecture for smaller downloads.
+        // For a single universal APK, remove this block.
+        splits {
+            abi {
+                enable         true
+                reset()
+                include        'arm64-v8a', 'armeabi-v7a', 'x86_64'
+                universalApk   false
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled   true
+            shrinkResources true
+            proguardFiles   getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig   signingConfigs.release   // configure in local.properties
+        }
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix   '-debug'
+            debuggable          true
+        }
+    }
+
+    // signingConfigs — fill in from environment / CI secrets
+    signingConfigs {
+        release {
+            storeFile     file(System.getenv("KEYSTORE_PATH")     ?: "keystore/release.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD")      ?: ""
+            keyAlias      System.getenv("KEY_ALIAS")              ?: "rustdialer"
+            keyPassword   System.getenv("KEY_PASSWORD")           ?: ""
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    // Point to pre-built .so files produced by Cargo
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+
+    packagingOptions {
+        // Strip debug symbols from .so in the APK for smaller size
+        doNotStrip "*/armeabi-v7a/*.so"
+        doNotStrip "*/arm64-v8a/*.so"
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.13.1'
+}

@@ -1,0 +1,15 @@
+# .clippy.toml
+# Enforce strict coding standards across the project.
+
+# Deny unwrap/expect in non-test code — forces explicit error handling.
+# (These are configured as warnings in main.rs via #![warn(...)];
+#  this file provides project-wide defaults.)
+
+# Minimum complexity for functions before suggesting extraction
+cognitive-complexity-threshold = 20
+
+# Maximum number of function arguments
+too-many-arguments-threshold = 7
+
+# Warn on large stack allocations (> 512 KB)
+large-stack-arrays-limit = 524288

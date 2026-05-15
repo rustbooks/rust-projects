@@ -1,0 +1,52 @@
+// ui/components/fab.slint
+// Floating Action Button — Material 3
+
+import { AppTheme } from "../themes/theme.slint";
+
+export component FAB {
+    in property <string> icon: "+";
+    in property <string> label: "";
+    in property <bool> extended: label != "";
+    callback clicked;
+
+    height: 56px;
+    width: extended ? (label-text.preferred-width + 48px) : 56px;
+
+    animate width { duration: AppTheme.motion-medium2; easing: ease-out; }
+
+    touch := TouchArea { clicked => { root.clicked(); } }
+
+    Rectangle {
+        border-radius: AppTheme.shape-large;
+        background: touch.pressed
+            ? AppTheme.primary-container.darker(10%)
+            : AppTheme.primary-container;
+        drop-shadow-blur: 6px;
+        drop-shadow-offset-y: 3px;
+        drop-shadow-color: AppTheme.primary.with-alpha(0.3);
+
+        animate background { duration: AppTheme.motion-short3; }
+
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 16px;
+            spacing: 8px;
+            alignment: center;
+
+            Text {
+                text: root.icon;
+                font-size: 22px;
+                color: AppTheme.on-primary-container;
+                vertical-alignment: center;
+            }
+
+            if root.extended: label-text := Text {
+                text: root.label;
+                font-size: AppTheme.type-label-large / 1px * 1px;
+                font-weight: 600;
+                color: AppTheme.on-primary-container;
+                vertical-alignment: center;
+            }
+        }
+    }
+}

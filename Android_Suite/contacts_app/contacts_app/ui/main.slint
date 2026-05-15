@@ -1,0 +1,382 @@
+// ui/main.slint
+// Root UI entry point. Imports all pages and components.
+// Uses Material 3 design tokens from the built-in Slint material style.
+
+import { ContactsPage } from "pages/contacts_page.slint";
+import { ContactDetailPage } from "pages/contact_detail_page.slint";
+import { EditContactPage } from "pages/edit_contact_page.slint";
+import { GroupsPage } from "pages/groups_page.slint";
+import { FavoritesPage } from "pages/favorites_page.slint";
+import { AppTheme } from "themes/theme.slint";
+import { NavigationBar, NavItem } from "components/navigation.slint";
+import { SearchBar } from "components/search_bar.slint";
+import { FAB } from "components/fab.slint";
+import { ConfirmDialog } from "components/dialogs.slint";
+import { ToastNotification } from "components/toast.slint";
+
+// ── Data Structures (mirrored in Rust via #[derive(Clone)]) ───────────────────
+
+export struct ContactAddress {
+    street: string,
+    city: string,
+    state: string,
+    zip: string,
+    country: string,
+    label: string,
+}
+
+export struct ContactEntry {
+    id: string,
+    first-name: string,
+    last-name: string,
+    phone-primary: string,
+    phone-secondary: string,
+    email: string,
+    organization: string,
+    job-title: string,
+    website: string,
+    notes: string,
+    group: string,
+    is-favorite: bool,
+    avatar-color: color,          // Generated from name hash
+    avatar-letter: string,        // First letter for avatar placeholder
+    created-at: string,
+    updated-at: string,
+}
+
+export struct GroupEntry {
+    id: string,
+    name: string,
+    count: int,
+    color: color,
+}
+
+// ── Navigation Pages ──────────────────────────────────────────────────────────
+export enum AppPage {
+    ContactsList,
+    ContactDetail,
+    EditContact,
+    NewContact,
+    Favorites,
+    Groups,
+    Settings,
+}
+
+// ── Main Application Window ───────────────────────────────────────────────────
+export component AppWindow inherits Window {
+    title: "Contacts";
+    min-width: 320px;
+    min-height: 568px;
+    preferred-width: 390px;
+    preferred-height: 844px;
+    background: AppTheme.surface;
+
+    // ── Callbacks (Rust ↔ Slint bridge) ──────────────────────────────────────
+    callback search-contacts(string) -> [ContactEntry];
+    callback save-contact(ContactEntry) -> bool;
+    callback delete-contact(string) -> bool;
+    callback toggle-favorite(string) -> bool;
+    callback import-contacts(string) -> int;     // returns count imported
+    callback export-contacts(string) -> bool;
+    callback get-groups() -> [GroupEntry];
+    callback save-group(GroupEntry) -> bool;
+    callback delete-group(string) -> bool;
+    callback request-sort(string);               // sort-key: "first", "last", "phone"
+    callback refresh-contacts();
+    callback show-toast(string, bool);           // message, is-error
+
+    // ── Properties (set from Rust) ────────────────────────────────────────────
+    in-out property <[ContactEntry]> contacts: [];
+    in-out property <[ContactEntry]> filtered-contacts: [];
+    in-out property <[ContactEntry]> favorite-contacts: [];
+    in-out property <[GroupEntry]> groups: [];
+    in-out property <ContactEntry> selected-contact;
+    in-out property <AppPage> current-page: AppPage.ContactsList;
+    in-out property <string> search-query: "";
+    in-out property <string> sort-key: "first";
+    in-out property <bool> is-loading: false;
+    in-out property <bool> is-wide-screen: root.width >= 1200px; // dual-pane breakpoint
+    in-out property <bool> show-confirm-dialog: false;
+    in-out property <string> confirm-message: "";
+    in-out property <string> pending-delete-id: "";
+    in-out property <string> toast-message: "";
+    in-out property <bool> toast-visible: false;
+    in-out property <bool> toast-is-error: false;
+    in-out property <int> tab-index: 0;
+
+    // ── Layout ────────────────────────────────────────────────────────────────
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        // Main content area — adapts to screen width
+        HorizontalLayout {
+            padding: 0px;
+            spacing: 0px;
+            height: root.height - (root.is-wide-screen ? 0px : nav-bar.preferred-height);
+
+            // Navigation Rail (wide screens: tablets, TVs, landscape)
+            if root.is-wide-screen: Rectangle {
+                width: 80px;
+                background: AppTheme.surface-container;
+
+                VerticalLayout {
+                    padding-top: 24px;
+                    spacing: 4px;
+                    alignment: start;
+
+                    // Rail Logo / App Icon
+                    Rectangle {
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 16px;
+                        background: AppTheme.primary;
+                        x: (parent.width - self.width) / 2;
+
+                        Text {
+                            text: "👤";
+                            font-size: 22px;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width;
+                            height: parent.height;
+                        }
+                    }
+
+                    Rectangle { height: 20px; } // Spacer
+
+                    // Rail items
+                    RailItem {
+                        icon: "☎";
+                        label: "All";
+                        selected: root.tab-index == 0;
+                        clicked => { root.tab-index = 0; root.current-page = AppPage.ContactsList; }
+                    }
+                    RailItem {
+                        icon: "★";
+                        label: "Favorites";
+                        selected: root.tab-index == 1;
+                        clicked => { root.tab-index = 1; root.current-page = AppPage.Favorites; }
+                    }
+                    RailItem {
+                        icon: "⊞";
+                        label: "Groups";
+                        selected: root.tab-index == 2;
+                        clicked => { root.tab-index = 2; root.current-page = AppPage.Groups; }
+                    }
+                }
+            }
+
+            // Content Area
+            Rectangle {
+                horizontal-stretch: 1;
+                background: AppTheme.surface;
+
+                // Page Router
+                if root.current-page == AppPage.ContactsList: ContactsPage {
+                    contacts: root.filtered-contacts;
+                    is-loading: root.is-loading;
+                    search-query: root.search-query;
+                    sort-key: root.sort-key;
+                    is-wide-screen: root.is-wide-screen;
+
+                    contact-selected(c) => {
+                        root.selected-contact = c;
+                        root.current-page = AppPage.ContactDetail;
+                    }
+                    search-changed(q) => {
+                        root.search-query = q;
+                        root.filtered-contacts = root.search-contacts(q);
+                    }
+                    sort-requested(key) => {
+                        root.sort-key = key;
+                        root.request-sort(key);
+                    }
+                    add-contact => {
+                        root.selected-contact = {
+                            id: "",
+                            first-name: "", last-name: "",
+                            phone-primary: "", phone-secondary: "",
+                            email: "", organization: "", job-title: "",
+                            website: "", notes: "", group: "",
+                            is-favorite: false,
+                            avatar-color: AppTheme.primary,
+                            avatar-letter: "+",
+                            created-at: "", updated-at: "",
+                        };
+                        root.current-page = AppPage.NewContact;
+                    }
+                    refresh => { root.refresh-contacts(); }
+                    import-clicked => { root.import-contacts(""); }
+                    export-clicked => { root.export-contacts(""); }
+                }
+
+                if root.current-page == AppPage.ContactDetail: ContactDetailPage {
+                    contact: root.selected-contact;
+                    is-wide-screen: root.is-wide-screen;
+
+                    back-clicked => { root.current-page = AppPage.ContactsList; }
+                    edit-clicked => { root.current-page = AppPage.EditContact; }
+                    favorite-toggled => {
+                        root.toggle-favorite(root.selected-contact.id);
+                    }
+                    delete-clicked => {
+                        root.pending-delete-id = root.selected-contact.id;
+                        root.confirm-message = "Delete " + root.selected-contact.first-name + " " + root.selected-contact.last-name + "?";
+                        root.show-confirm-dialog = true;
+                    }
+                }
+
+                if root.current-page == AppPage.EditContact || root.current-page == AppPage.NewContact: EditContactPage {
+                    contact: root.selected-contact;
+                    is-new: root.current-page == AppPage.NewContact;
+                    groups: root.groups;
+
+                    back-clicked => { 
+                        root.current-page = (root.current-page == AppPage.NewContact) 
+                            ? AppPage.ContactsList 
+                            : AppPage.ContactDetail;
+                    }
+                    save-clicked(c) => {
+                        if root.save-contact(c) {
+                            root.selected-contact = c;
+                            root.current-page = (root.current-page == AppPage.NewContact)
+                                ? AppPage.ContactsList
+                                : AppPage.ContactDetail;
+                            root.show-toast("Contact saved successfully", false);
+                        } else {
+                            root.show-toast("Failed to save contact", true);
+                        }
+                    }
+                }
+
+                if root.current-page == AppPage.Favorites: FavoritesPage {
+                    contacts: root.favorite-contacts;
+                    contact-selected(c) => {
+                        root.selected-contact = c;
+                        root.current-page = AppPage.ContactDetail;
+                    }
+                    back-clicked => { root.current-page = AppPage.ContactsList; }
+                }
+
+                if root.current-page == AppPage.Groups: GroupsPage {
+                    groups: root.groups;
+                    contacts: root.contacts;
+                    back-clicked => { root.current-page = AppPage.ContactsList; }
+                    group-selected(g) => {
+                        root.search-query = g.name;
+                        root.filtered-contacts = root.search-contacts(g.name);
+                        root.current-page = AppPage.ContactsList;
+                    }
+                    save-group(g) => { root.save-group(g); }
+                    delete-group(id) => { root.delete-group(id); }
+                }
+            }
+
+            // Detail pane (dual-pane for wide screens)
+            if root.is-wide-screen && root.current-page == AppPage.ContactsList: Rectangle {
+                width: 400px;
+                background: AppTheme.surface-container-low;
+                border-radius: 16px;
+
+                ContactDetailPage {
+                    contact: root.selected-contact;
+                    is-wide-screen: root.is-wide-screen;
+                    back-clicked => {}   // No back on wide screens
+                    edit-clicked => { root.current-page = AppPage.EditContact; }
+                    favorite-toggled => { root.toggle-favorite(root.selected-contact.id); }
+                    delete-clicked => {
+                        root.pending-delete-id = root.selected-contact.id;
+                        root.confirm-message = "Delete this contact?";
+                        root.show-confirm-dialog = true;
+                    }
+                }
+            }
+        }
+
+        // Bottom Navigation Bar (phone/narrow screens only)
+        if !root.is-wide-screen: nav-bar := NavigationBar {
+            tab-index <=> root.tab-index;
+            tabs-changed(i) => {
+                root.tab-index = i;
+                if i == 0 { root.current-page = AppPage.ContactsList; }
+                else if i == 1 { root.current-page = AppPage.Favorites; }
+                else if i == 2 { root.current-page = AppPage.Groups; }
+            }
+        }
+    }
+
+    // ── Confirm Delete Dialog ─────────────────────────────────────────────────
+    if root.show-confirm-dialog: ConfirmDialog {
+        message: root.confirm-message;
+        confirm-label: "Delete";
+        is-destructive: true;
+
+        confirmed => {
+            if root.delete-contact(root.pending-delete-id) {
+                root.current-page = AppPage.ContactsList;
+                root.show-toast("Contact deleted", false);
+            } else {
+                root.show-toast("Failed to delete contact", true);
+            }
+            root.show-confirm-dialog = false;
+        }
+        cancelled => { root.show-confirm-dialog = false; }
+    }
+
+    // ── Toast Notification ────────────────────────────────────────────────────
+    if root.toast-visible: ToastNotification {
+        message: root.toast-message;
+        is-error: root.toast-is-error;
+        dismissed => { root.toast-visible = false; }
+    }
+}
+
+// ── Navigation Rail Item ──────────────────────────────────────────────────────
+component RailItem {
+    in property <string> icon;
+    in property <string> label;
+    in property <bool> selected: false;
+    callback clicked;
+
+    height: 72px;
+    width: 80px;
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    VerticalLayout {
+        spacing: 4px;
+        alignment: center;
+
+        // Indicator pill
+        Rectangle {
+            width: selected ? 56px : 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: selected ? AppTheme.secondary-container : transparent;
+            x: (parent.width - self.width) / 2;
+
+            animate width { duration: 200ms; easing: ease-out; }
+            animate background { duration: 150ms; }
+
+            Text {
+                text: root.icon;
+                font-size: 18px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                width: parent.width;
+                height: parent.height;
+            }
+        }
+
+        Text {
+            text: root.label;
+            font-size: 11px;
+            font-weight: selected ? 700 : 400;
+            color: selected ? AppTheme.on-secondary-container : AppTheme.on-surface-variant;
+            horizontal-alignment: center;
+        }
+    }
+}

@@ -1,0 +1,156 @@
+// ui/new_message_dialog.slint
+// Dialog to start a new SMS conversation.
+
+import { Theme } from "app.slint";
+
+export component NewMessageDialog {
+    callback confirmed(string /* phone */, string /* name */);
+    callback cancelled();
+
+    property <string> phone: "";
+    property <string> name:  "";
+
+    // Scrim
+    Rectangle {
+        background: #00000066;
+
+        TouchArea {
+            clicked => { root.cancelled(); }
+        }
+
+        // Card
+        Rectangle {
+            x:             (parent.width  - self.width)  / 2;
+            y:             (parent.height - self.height) / 2;
+            width:         min(parent.width - Theme.sp-xl * 2, 360px);
+            border-radius: Theme.radius-xl;
+            background:    Theme.surface;
+            drop-shadow-blur:  24px;
+            drop-shadow-color: #00000044;
+
+            VerticalLayout {
+                padding:  Theme.sp-l;
+                spacing:  Theme.sp-m;
+
+                Text {
+                    text:       "New Message";
+                    font-size:  Theme.type-title-lg;
+                    font-weight: 700;
+                    color:      Theme.on-surface;
+                }
+
+                // Phone number field
+                InputField {
+                    label:       "Phone Number";
+                    placeholder: "+1 555 000 0000";
+                    value <=> phone;
+                    input-type:  InputType.number;
+                }
+
+                // Contact name field
+                InputField {
+                    label:       "Name (optional)";
+                    placeholder: "Contact name";
+                    value <=> name;
+                }
+
+                // Buttons
+                HorizontalLayout {
+                    spacing:   Theme.sp-m;
+                    alignment: end;
+
+                    // Cancel
+                    TouchArea {
+                        height: 40px;
+                        width:  80px;
+                        mouse-cursor: pointer;
+                        clicked => { root.cancelled(); }
+
+                        Rectangle {
+                            border-radius: Theme.radius-xl;
+
+                            Text {
+                                text:       "Cancel";
+                                font-size:  Theme.type-body-lg;
+                                color:      Theme.primary;
+                                vertical-alignment:   center;
+                                horizontal-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Start
+                    TouchArea {
+                        height: 40px;
+                        width:  80px;
+                        enabled: phone != "";
+                        mouse-cursor: pointer;
+                        clicked => {
+                            if phone != "" {
+                                root.confirmed(
+                                    phone,
+                                    name == "" ? phone : name
+                                );
+                            }
+                        }
+
+                        Rectangle {
+                            border-radius: Theme.radius-xl;
+                            background: phone != "" ? Theme.primary : Theme.outline-variant;
+                            animate background { duration: 150ms; }
+
+                            Text {
+                                text:       "Start";
+                                font-size:  Theme.type-body-lg;
+                                font-weight: 600;
+                                color:      phone != "" ? Theme.on-primary : Theme.on-surface-variant;
+                                vertical-alignment:   center;
+                                horizontal-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Reusable text input field ─────────────────────────────────────────────────
+component InputField {
+    in property <string> label;
+    in property <string> placeholder;
+    in-out property <string> value;
+    in property <InputType> input-type: InputType.text;
+
+    height: 72px;
+
+    VerticalLayout {
+        spacing: Theme.sp-xs;
+
+        Text {
+            text:      label;
+            font-size: Theme.type-body-sm;
+            color:     Theme.primary;
+            font-weight: 600;
+        }
+
+        Rectangle {
+            border-radius: Theme.radius-small;
+            border-width:  1.5px;
+            border-color:  input.has-focus ? Theme.primary : Theme.outline;
+            background:    Theme.surface;
+            animate border-color { duration: 150ms; }
+
+            input := TextInput {
+                text:             <=> value;
+                font-size:        Theme.type-body-lg;
+                color:            Theme.on-surface;
+                input-type:       input-type;
+                placeholder-text: placeholder;
+                placeholder-color: Theme.on-surface-variant;
+                padding-left:     Theme.sp-m;
+                padding-right:    Theme.sp-m;
+            }
+        }
+    }
+}

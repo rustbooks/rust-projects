@@ -1,0 +1,222 @@
+// ui/components/stopwatch_tab.slint
+// ============================================================================
+// Stopwatch Tab — High-precision stopwatch with lap times
+// ============================================================================
+
+import { MaterialTheme } from "../app.slint";
+
+component LapItem {
+    in property <string> lap-text: "Lap 1 — 00:32.45";
+    in property <int> index: 0;
+
+    height: 48px;
+
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        background: root.index % 2 == 0 ? transparent : MaterialTheme.surface-1;
+
+        HorizontalLayout {
+            padding-left: 24px;
+            padding-right: 24px;
+            alignment: space-between;
+
+            Text {
+                text: root.lap-text;
+                font-size: MaterialTheme.body-large;
+                color: MaterialTheme.on-surface;
+                vertical-alignment: center;
+                font-family: "monospace";
+            }
+        }
+    }
+}
+
+component StopwatchButton {
+    in property <string> label;
+    in property <bool> primary: false;
+    in property <bool> disabled: false;
+    callback clicked;
+
+    width: 80px;
+    height: 80px;
+
+    Rectangle {
+        border-radius: 40px;
+        background: root.disabled
+            ? MaterialTheme.surface-variant
+            : root.primary
+                ? MaterialTheme.primary-container
+                : MaterialTheme.secondary-container;
+        border-width: 2px;
+        border-color: root.disabled
+            ? transparent
+            : root.primary
+                ? MaterialTheme.primary
+                : MaterialTheme.secondary;
+
+        animate background { duration: 200ms; easing: ease-out; }
+
+        Text {
+            text: root.label;
+            font-size: MaterialTheme.label-large;
+            font-weight: 600;
+            color: root.disabled
+                ? MaterialTheme.on-surface-variant
+                : root.primary
+                    ? MaterialTheme.on-primary-container
+                    : MaterialTheme.on-secondary-container;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+
+        TouchArea {
+            enabled: !root.disabled;
+            mouse-cursor: root.disabled ? default : pointer;
+            clicked => { root.clicked(); }
+        }
+    }
+}
+
+export component StopwatchTab {
+    in property <string> display: "00:00.00";
+    in property <bool> running: false;
+    in property <[string]> laps: [];
+
+    callback start-pause();
+    callback reset();
+    callback lap();
+
+    background: MaterialTheme.surface;
+
+    VerticalLayout {
+        spacing: 0;
+        padding: 0;
+
+        // App bar
+        Rectangle {
+            height: 64px;
+            background: MaterialTheme.surface;
+
+            Text {
+                x: 24px;
+                y: (parent.height - 32px) / 2;
+                text: "Stopwatch";
+                font-size: MaterialTheme.headline-medium;
+                font-weight: 600;
+                color: MaterialTheme.on-surface;
+            }
+        }
+
+        // Time display area
+        Rectangle {
+            height: 180px;
+            background: MaterialTheme.surface-1;
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 8px;
+
+                Text {
+                    text: root.display;
+                    font-size: 64px;
+                    font-weight: 200;
+                    color: root.running ? MaterialTheme.primary : MaterialTheme.on-surface;
+                    horizontal-alignment: center;
+                    letter-spacing: -2px;
+                    font-family: "monospace";
+
+                    animate color { duration: 300ms; }
+                }
+
+                if laps.length > 0: Text {
+                    text: laps.length + (laps.length == 1 ? " lap" : " laps");
+                    font-size: MaterialTheme.body-medium;
+                    color: MaterialTheme.on-surface-variant;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        // Control buttons
+        Rectangle {
+            height: 120px;
+            background: MaterialTheme.surface;
+
+            HorizontalLayout {
+                alignment: center;
+                spacing: 24px;
+                padding: 20px;
+
+                // Lap / Reset button (left)
+                StopwatchButton {
+                    label: root.running ? "Lap" : "Reset";
+                    disabled: !root.running && root.display == "00:00.00";
+                    clicked => {
+                        if root.running {
+                            root.lap();
+                        } else {
+                            root.reset();
+                        }
+                    }
+                }
+
+                // Start / Pause button (right, primary)
+                StopwatchButton {
+                    label: root.running ? "⏸" : "▶";
+                    primary: true;
+                    clicked => { root.start-pause(); }
+                }
+            }
+        }
+
+        // Divider
+        Rectangle {
+            height: 1px;
+            background: MaterialTheme.outline-variant;
+        }
+
+        // Lap list header
+        if laps.length > 0: Rectangle {
+            height: 40px;
+            background: MaterialTheme.surface;
+
+            HorizontalLayout {
+                padding-left: 24px;
+                padding-right: 24px;
+                alignment: space-between;
+
+                Text {
+                    text: "Lap";
+                    font-size: MaterialTheme.label-large;
+                    color: MaterialTheme.on-surface-variant;
+                    font-weight: 600;
+                    vertical-alignment: center;
+                    letter-spacing: 1px;
+                }
+                Text {
+                    text: "Time";
+                    font-size: MaterialTheme.label-large;
+                    color: MaterialTheme.on-surface-variant;
+                    font-weight: 600;
+                    vertical-alignment: center;
+                    letter-spacing: 1px;
+                }
+            }
+        }
+
+        // Lap list (scrollable)
+        Flickable {
+            viewport-height: laps.length * 48px;
+            clip: true;
+
+            VerticalLayout {
+                for lap[i] in laps: LapItem {
+                    lap-text: lap;
+                    index: i;
+                    width: parent.width;
+                }
+            }
+        }
+    }
+}

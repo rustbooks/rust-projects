@@ -1,0 +1,503 @@
+// ui/app.slint
+// Root entry-point for the Android Messages UI.
+// All sub-components are imported here so slint-build only needs one compile call.
+//
+// Design language: Material You (Material Design 3)
+// ─ Dynamic colour tokens (surface, on-surface, primary, secondary-container, …)
+// ─ Elevation via box-shadow, not hard borders
+// ─ 60 fps animations with easing curves
+// ─ Responsive: phone portrait → tablet → large-screen dual-pane
+
+import { ConversationList }   from "conversation_list.slint";
+import { MessageThread }      from "message_thread.slint";
+import { ComposeBar }         from "compose_bar.slint";
+import { SearchBar }          from "search_bar.slint";
+import { SettingsPanel }      from "settings_panel.slint";
+import { NewMessageDialog }   from "new_message_dialog.slint";
+import { AttachmentViewer }   from "attachment_viewer.slint";
+
+// ── Shared design tokens ────────────────────────────────────────────────────
+// Centralising tokens here means a single palette change propagates everywhere.
+global Theme {
+    // Primary brand colour (Material You "seed" colour — blue-purple)
+    out property <color> primary:            #6750A4;
+    out property <color> on-primary:         #FFFFFF;
+    out property <color> primary-container:  #EADDFF;
+    out property <color> on-primary-container: #21005D;
+
+    // Secondary / tonal
+    out property <color> secondary:           #625B71;
+    out property <color> secondary-container: #E8DEF8;
+    out property <color> on-secondary-container: #1D192B;
+
+    // Surfaces
+    out property <color> surface:            #FFFBFE;
+    out property <color> surface-variant:    #E7E0EC;
+    out property <color> on-surface:         #1C1B1F;
+    out property <color> on-surface-variant: #49454F;
+    out property <color> outline:            #79747E;
+    out property <color> outline-variant:    #CAC4D0;
+
+    // Error
+    out property <color> error:              #B3261E;
+    out property <color> error-container:    #F9DEDC;
+
+    // Sent-bubble tint
+    out property <color> sent-bubble:        #D0BCFF;
+    out property <color> received-bubble:    #E8DEF8;
+
+    // Elevation shadows (CSS-style, Slint uses drop-shadow filter)
+    out property <length> radius-small:  8px;
+    out property <length> radius-medium: 12px;
+    out property <length> radius-large:  16px;
+    out property <length> radius-xl:     28px;
+
+    // Spacing grid (4 dp base)
+    out property <length> sp-xs: 4px;
+    out property <length> sp-s:  8px;
+    out property <length> sp-m:  16px;
+    out property <length> sp-l:  24px;
+    out property <length> sp-xl: 32px;
+
+    // Type scale
+    out property <length> type-body-sm:  12px;
+    out property <length> type-body-md:  14px;
+    out property <length> type-body-lg:  16px;
+    out property <length> type-title-md: 16px;
+    out property <length> type-title-lg: 22px;
+    out property <length> type-headline: 28px;
+}
+
+// ── Data structures exposed to Rust via the bridge ───────────────────────────
+// Slint generates typed Rust structs for each `struct` declared here.
+
+struct ConversationItem {
+    id:           string,
+    contact-name: string,
+    phone:        string,
+    snippet:      string,      // last message preview
+    timestamp:    string,      // formatted relative time
+    unread-count: int,
+    avatar-color: color,       // generated from contact initial
+    is-muted:     bool,
+    is-pinned:    bool,
+    has-attachment: bool,
+}
+
+struct MessageItem {
+    id:            string,
+    conversation-id: string,
+    body:          string,
+    timestamp:     string,
+    is-sent:       bool,       // true = right-aligned, false = left-aligned
+    is-read:       bool,
+    attachment-type: string,   // "none" | "image" | "video" | "audio" | "file"
+    attachment-path: string,
+    attachment-name: string,
+    is-encrypted:  bool,
+    status:        string,     // "sending" | "sent" | "delivered" | "read" | "failed"
+}
+
+// ── Root application window ──────────────────────────────────────────────────
+export component AppWindow inherits Window {
+    title:            "Messages";
+    min-width:        360px;
+    min-height:       640px;
+    preferred-width:  390px;
+    preferred-height: 844px;
+    background:       Theme.surface;
+    // Icon path (compiled into binary via include_bytes! in Rust side)
+    icon: @image-url("../assets/icon.png");
+
+    // ── State properties (set from Rust) ──────────────────────────────────
+    in-out property <[ConversationItem]> conversations:  [];
+    in-out property <[MessageItem]>      messages:       [];
+    in-out property <string>             active-conv-id: "";
+    in-out property <string>             active-contact: "";
+    in-out property <string>             active-phone:   "";
+    in-out property <bool>               is-loading:     false;
+    in-out property <bool>               show-thread:    false;
+    in-out property <bool>               show-search:    false;
+    in-out property <bool>               show-settings:  false;
+    in-out property <bool>               show-compose:   false;
+    in-out property <bool>               show-attachment:false;
+    in-out property <string>             search-query:   "";
+    in-out property <string>             attachment-path:"";
+    in-out property <string>             attachment-type:"";
+    in-out property <bool>               dark-mode:      false;
+    in-out property <string>             status-message: "";
+    in-out property <bool>               encryption-enabled: false;
+
+    // Responsive breakpoint: ≥ 840 px → dual-pane master-detail layout
+    property <bool> dual-pane: self.width >= 840px;
+
+    // ── Callbacks (implemented on the Rust side) ──────────────────────────
+    callback send-message(string /* conv-id */, string /* body */, string /* attachment */);
+    callback load-messages(string /* conv-id */);
+    callback delete-conversation(string /* conv-id */);
+    callback archive-conversation(string /* conv-id */);
+    callback search-conversations(string /* query */);
+    callback new-conversation(string /* phone */, string /* name */);
+    callback pick-attachment();
+    callback share-message(string /* body */);
+    callback toggle-encryption();
+    callback toggle-dark-mode();
+    callback mark-read(string /* conv-id */);
+    callback delete-message(string /* msg-id */);
+    callback refresh-conversations();
+    callback open-settings();
+    callback close-settings();
+
+    // ── Root layout ───────────────────────────────────────────────────────
+    HorizontalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        // ──────────────────────────────────────────────────────────────────
+        // LEFT PANE — conversation list (always visible on dual-pane)
+        // ──────────────────────────────────────────────────────────────────
+        Rectangle {
+            // On phone: full width when thread is hidden, else hidden.
+            // On tablet/desktop: fixed 360 px sidebar.
+            width:   root.dual-pane ? 360px : (root.show-thread ? 0px : root.width);
+            visible: root.dual-pane || !root.show-thread;
+            background: Theme.surface;
+            clip: true;
+
+            // Smooth slide transition when collapsing/expanding
+            animate width { duration: 250ms; easing: ease-in-out; }
+
+            VerticalLayout {
+                padding: 0px;
+                spacing: 0px;
+
+                // ── Top App Bar ──────────────────────────────────────────
+                Rectangle {
+                    height: 64px;
+                    background: Theme.surface;
+
+                    // Material elevation shadow line
+                    Rectangle {
+                        y: parent.height - 1px;
+                        height: 1px;
+                        background: Theme.outline-variant;
+                    }
+
+                    HorizontalLayout {
+                        padding-left:  Theme.sp-m;
+                        padding-right: Theme.sp-s;
+                        padding-top:   Theme.sp-m;
+                        padding-bottom:Theme.sp-m;
+                        alignment: space-between;
+                        spacing: Theme.sp-s;
+
+                        // App title
+                        Text {
+                            text:      "Messages";
+                            font-size: Theme.type-headline;
+                            font-weight: 700;
+                            color:     Theme.on-surface;
+                            vertical-alignment: center;
+                        }
+
+                        // Search icon button
+                        TouchArea {
+                            width:  40px;
+                            height: 40px;
+                            mouse-cursor: pointer;
+                            clicked => { root.show-search = !root.show-search; }
+
+                            Rectangle {
+                                border-radius: 20px;
+                                background: touch-search.has-hover ? Theme.surface-variant : transparent;
+                                animate background { duration: 150ms; }
+                                touch-search := TouchArea { }
+
+                                Text {
+                                    text:      "🔍";
+                                    font-size: 20px;
+                                    vertical-alignment: center;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                        }
+
+                        // Settings icon button
+                        TouchArea {
+                            width:  40px;
+                            height: 40px;
+                            mouse-cursor: pointer;
+                            clicked => { root.open-settings(); }
+
+                            Rectangle {
+                                border-radius: 20px;
+                                background: touch-settings.has-hover ? Theme.surface-variant : transparent;
+                                animate background { duration: 150ms; }
+                                touch-settings := TouchArea { }
+
+                                Text {
+                                    text:      "⚙";
+                                    font-size: 20px;
+                                    vertical-alignment: center;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── Search bar (animated slide-in) ───────────────────────
+                if root.show-search: SearchBar {
+                    query <=> root.search-query;
+                    search-changed(q) => { root.search-conversations(q); }
+                    closed => { root.show-search = false; root.search-query = ""; }
+                }
+
+                // ── Conversation list ────────────────────────────────────
+                ConversationList {
+                    conversations:   root.conversations;
+                    active-id:       root.active-conv-id;
+                    is-loading:      root.is-loading;
+                    refresh => { root.refresh-conversations(); }
+                    selected(id, name, phone) => {
+                        root.active-conv-id = id;
+                        root.active-contact = name;
+                        root.active-phone   = phone;
+                        root.show-thread    = true;
+                        root.load-messages(id);
+                        root.mark-read(id);
+                    }
+                    delete-conv(id) => { root.delete-conversation(id); }
+                    archive-conv(id) => { root.archive-conversation(id); }
+                }
+            }
+
+            // ── FAB — New message ─────────────────────────────────────────
+            // Positioned at bottom-right of the left pane.
+            TouchArea {
+                x:      parent.width  - 72px;
+                y:      parent.height - 88px;
+                width:  56px;
+                height: 56px;
+                mouse-cursor: pointer;
+                clicked => { root.show-compose = true; }
+
+                Rectangle {
+                    border-radius: 16px;
+                    background:    Theme.primary-container;
+                    drop-shadow-color:   #00000033;
+                    drop-shadow-blur:    8px;
+                    drop-shadow-offset-y: 3px;
+
+                    animate background { duration: 150ms; }
+
+                    Text {
+                        text:       "✏";
+                        font-size:  24px;
+                        color:      Theme.on-primary-container;
+                        vertical-alignment:   center;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // Vertical divider (dual-pane only)
+        if root.dual-pane: Rectangle {
+            width:      1px;
+            background: Theme.outline-variant;
+        }
+
+        // ──────────────────────────────────────────────────────────────────
+        // RIGHT PANE — message thread
+        // ──────────────────────────────────────────────────────────────────
+        Rectangle {
+            // On phone: full width when thread visible.
+            // On tablet: fill remaining width.
+            width:   root.dual-pane
+                     ? (root.width - 361px)
+                     : (root.show-thread ? root.width : 0px);
+            visible: root.dual-pane || root.show-thread;
+            background: Theme.surface;
+            clip: true;
+
+            animate width { duration: 250ms; easing: ease-in-out; }
+
+            VerticalLayout {
+                padding: 0px;
+                spacing: 0px;
+
+                // ── Thread top bar ───────────────────────────────────────
+                if root.show-thread || root.dual-pane: Rectangle {
+                    height: 64px;
+                    background: Theme.surface;
+
+                    Rectangle {
+                        y:          parent.height - 1px;
+                        height:     1px;
+                        background: Theme.outline-variant;
+                    }
+
+                    HorizontalLayout {
+                        padding-left:   Theme.sp-s;
+                        padding-right:  Theme.sp-m;
+                        padding-top:    Theme.sp-m;
+                        padding-bottom: Theme.sp-m;
+                        spacing:        Theme.sp-s;
+                        alignment:      space-between;
+
+                        HorizontalLayout {
+                            spacing: Theme.sp-s;
+
+                            // Back button (phone only)
+                            if !root.dual-pane: TouchArea {
+                                width:  40px;
+                                height: 40px;
+                                mouse-cursor: pointer;
+                                clicked => { root.show-thread = false; }
+
+                                Rectangle {
+                                    border-radius: 20px;
+                                    background: touch-back.has-hover ? Theme.surface-variant : transparent;
+                                    animate background { duration: 150ms; }
+                                    touch-back := TouchArea { }
+
+                                    Text {
+                                        text:  "←";
+                                        font-size: 20px;
+                                        vertical-alignment: center;
+                                        horizontal-alignment: center;
+                                    }
+                                }
+                            }
+
+                            // Avatar circle
+                            Rectangle {
+                                width:         40px;
+                                height:        40px;
+                                border-radius: 20px;
+                                background:    root.active-conv-id == "" ? Theme.surface-variant
+                                               : Theme.primary-container;
+
+                                Text {
+                                    text:  root.active-contact == "" ? "?" :
+                                           root.active-contact.substring(0, 1);
+                                    font-size: 18px;
+                                    font-weight: 600;
+                                    color: Theme.on-primary-container;
+                                    vertical-alignment:   center;
+                                    horizontal-alignment: center;
+                                }
+                            }
+
+                            VerticalLayout {
+                                alignment: center;
+                                spacing:   1px;
+
+                                Text {
+                                    text:      root.active-contact == "" ? "Select a conversation" : root.active-contact;
+                                    font-size: Theme.type-title-md;
+                                    font-weight: 600;
+                                    color:     Theme.on-surface;
+                                }
+
+                                if root.active-phone != "": Text {
+                                    text:      root.active-phone;
+                                    font-size: Theme.type-body-sm;
+                                    color:     Theme.on-surface-variant;
+                                }
+                            }
+                        }
+
+                        // Encryption toggle
+                        TouchArea {
+                            width:  40px;
+                            height: 40px;
+                            mouse-cursor: pointer;
+                            clicked => { root.toggle-encryption(); }
+
+                            Rectangle {
+                                border-radius: 20px;
+                                background: touch-enc.has-hover ? Theme.surface-variant : transparent;
+                                animate background { duration: 150ms; }
+                                touch-enc := TouchArea { }
+
+                                Text {
+                                    text:      root.encryption-enabled ? "🔒" : "🔓";
+                                    font-size: 18px;
+                                    vertical-alignment: center;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── Message thread ───────────────────────────────────────
+                MessageThread {
+                    messages:     root.messages;
+                    is-loading:   root.is-loading;
+                    conv-id:      root.active-conv-id;
+                    delete-msg(id) => { root.delete-message(id); }
+                    share-msg(body) => { root.share-message(body); }
+                    view-attachment(path, type) => {
+                        root.attachment-path = path;
+                        root.attachment-type = type;
+                        root.show-attachment = true;
+                    }
+                }
+
+                // ── Compose bar ──────────────────────────────────────────
+                if root.show-thread || root.dual-pane: ComposeBar {
+                    disabled: root.active-conv-id == "";
+                    pick-attachment => { root.pick-attachment(); }
+                    send(body, att) => {
+                        root.send-message(root.active-conv-id, body, att);
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Status snackbar ────────────────────────────────────────────────────
+    if root.status-message != "": Rectangle {
+        x:      (root.width  - self.width)  / 2;
+        y:       root.height - 80px;
+        width:  min(root.width - Theme.sp-l * 2, 320px);
+        height: 48px;
+        border-radius: Theme.radius-small;
+        background: #323232;
+        drop-shadow-blur: 8px;
+        drop-shadow-color: #00000055;
+
+        Text {
+            text:       root.status-message;
+            color:      #FFFFFF;
+            font-size:  Theme.type-body-md;
+            vertical-alignment:   center;
+            horizontal-alignment: center;
+        }
+    }
+
+    // ── Overlay dialogs ───────────────────────────────────────────────────
+    if root.show-compose: NewMessageDialog {
+        confirmed(phone, name) => {
+            root.show-compose = false;
+            root.new-conversation(phone, name);
+        }
+        cancelled => { root.show-compose = false; }
+    }
+
+    if root.show-settings: SettingsPanel {
+        dark-mode        <=> root.dark-mode;
+        encryption-on    <=> root.encryption-enabled;
+        toggle-dark      => { root.toggle-dark-mode(); }
+        closed           => { root.close-settings(); }
+    }
+
+    if root.show-attachment: AttachmentViewer {
+        path: root.attachment-path;
+        media-type: root.attachment-type;
+        closed => { root.show-attachment = false; }
+    }
+}

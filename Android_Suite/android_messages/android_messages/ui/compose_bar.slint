@@ -1,0 +1,132 @@
+// ui/compose_bar.slint
+// Message compose bar at the bottom of the thread.
+// ─ Expand on focus (single line → multi-line)
+// ─ Attachment picker button
+// ─ Send button (animated, disabled when empty)
+// ─ Character count (SMS segment aware)
+
+import { Theme } from "app.slint";
+
+export component ComposeBar {
+    in property <bool>   disabled;
+    in property <string> prefill: "";
+
+    callback send(string /* body */, string /* attachment */);
+    callback pick-attachment();
+
+    property <string> body:       "";
+    property <string> attachment: "";
+    property <bool>   focused:    false;
+    property <int>    char-count: 0;
+
+    height: self.focused ? 120px : 72px;
+    animate height { duration: 200ms; easing: ease-in-out; }
+
+    Rectangle {
+        background: Theme.surface;
+        drop-shadow-blur:     8px;
+        drop-shadow-offset-y: -2px;
+        drop-shadow-color:    #00000022;
+
+        HorizontalLayout {
+            padding:   Theme.sp-s;
+            spacing:   Theme.sp-xs;
+            alignment: center;
+
+            // Attachment button
+            TouchArea {
+                width:  40px; height: 40px;
+                enabled: !disabled;
+                mouse-cursor: pointer;
+                clicked => { root.pick-attachment(); }
+
+                Rectangle {
+                    border-radius: 20px;
+                    background:   att-touch.has-hover ? Theme.surface-variant : transparent;
+                    animate background { duration: 100ms; }
+                    att-touch := TouchArea { }
+
+                    Text {
+                        text:      "📎";
+                        font-size: 20px;
+                        vertical-alignment:   center;
+                        horizontal-alignment: center;
+                        color: disabled ? Theme.outline : Theme.on-surface;
+                    }
+                }
+            }
+
+            // Text input area
+            Rectangle {
+                border-radius: Theme.radius-xl;
+                background:    Theme.surface-variant;
+                min-height:    40px;
+
+                TextInput {
+                    text:               <=> body;
+                    font-size:          Theme.type-body-lg;
+                    color:              Theme.on-surface;
+                    wrap:               word-wrap;
+                    enabled:            !disabled;
+                    padding-left:       Theme.sp-m;
+                    padding-right:      Theme.sp-m;
+                    padding-top:        Theme.sp-s;
+                    padding-bottom:     Theme.sp-s;
+                    placeholder-text:   disabled ? "Select a conversation…" : "Message";
+                    placeholder-color:  Theme.on-surface-variant;
+
+                    accepted => {
+                        // Enter key sends on desktop
+                        if body.trim() != "" {
+                            root.send(body, attachment);
+                            body       = "";
+                            attachment = "";
+                            focused    = false;
+                        }
+                    }
+
+                    edited(txt) => {
+                        body       = txt;
+                        focused    = txt != "";
+                        char-count = txt.character-count;
+                    }
+                }
+            }
+
+            // Send button
+            TouchArea {
+                width:  48px; height: 48px;
+                enabled: !disabled && body.trim() != "";
+                mouse-cursor: pointer;
+
+                clicked => {
+                    if body.trim() != "" {
+                        root.send(body, attachment);
+                        body       = "";
+                        attachment = "";
+                        focused    = false;
+                    }
+                }
+
+                Rectangle {
+                    border-radius: 24px;
+                    background:   send-touch.has-hover && body.trim() != ""
+                                  ? Theme.primary
+                                  : (body.trim() != "" ? Theme.primary-container : Theme.surface-variant);
+                    animate background { duration: 150ms; }
+                    send-touch := TouchArea { }
+
+                    Text {
+                        text:      "▶";
+                        font-size: 20px;
+                        color:     body.trim() != ""
+                                   ? Theme.on-primary-container
+                                   : Theme.outline;
+                        vertical-alignment:   center;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+    }
+}

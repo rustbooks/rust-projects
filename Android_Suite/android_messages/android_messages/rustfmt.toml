@@ -1,0 +1,10 @@
+# rustfmt.toml
+# Consistent formatting across the project.
+
+edition           = "2021"
+max_width         = 100          # slightly wider than default 80 for modern screens
+tab_spaces        = 4
+newline_style     = "Auto"       # LF on Unix, CRLF on Windows
+use_small_heuristics = "Default"
+imports_granularity = "Module"   # group imports by module
+group_imports     = "StdExternalCrate"  # std → external → crate-local

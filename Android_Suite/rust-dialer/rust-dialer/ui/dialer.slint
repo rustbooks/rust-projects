@@ -1,0 +1,1541 @@
+// ui/dialer.slint
+// ─────────────────────────────────────────────────────────────────────────────
+// Material You Dialer UI — Single source file that adapts from 360dp (phone)
+// all the way to 1920dp+ (TV / desktop dual-pane layout).
+//
+// Design tokens follow the Material Design 3 specification:
+//   https://m3.material.io/
+//
+// Layout breakpoints:
+//   compact  < 600dp   → phone portrait
+//   medium   600–839dp → phone landscape / small tablet
+//   expanded ≥ 840dp   → tablet / desktop / TV
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { VerticalBox, HorizontalBox, GridBox } from "std-widgets.slint";
+
+// ─── Shared Color Tokens ─────────────────────────────────────────────────────
+global Theme {
+    // Material You seed color → tonal palette generated at compile-time.
+    // In a real Material You app these would be generated from the wallpaper;
+    // here we use a fixed blue seed for cross-platform consistency.
+    out property <color> primary:            #1976D2;
+    out property <color> on-primary:         #FFFFFF;
+    out property <color> primary-container:  #D3E4FF;
+    out property <color> surface:            #FDFCFF;
+    out property <color> surface-variant:    #E1E2EC;
+    out property <color> on-surface:         #1A1C1E;
+    out property <color> on-surface-variant: #44474F;
+    out property <color> outline:            #74777F;
+    out property <color> outline-variant:    #C4C6D0;
+    out property <color> error:              #B3261E;
+    out property <color> secondary:          #565F71;
+    out property <color> secondary-container:#DAE2F9;
+    out property <color> tertiary:           #705575;
+    out property <color> tertiary-container: #FAD8FD;
+    out property <color> inverse-surface:    #2F3033;
+    out property <color> inverse-on-surface: #F1F0F4;
+    out property <color> fab-color:          #1976D2;
+
+    // Elevation overlays (dp → alpha for surface tint)
+    out property <length> corner-small:  4px;
+    out property <length> corner-medium: 12px;
+    out property <length> corner-large:  16px;
+    out property <length> corner-xl:     28px;
+    out property <length> corner-full:   50px;
+
+    // Typography scale
+    out property <length> display-large:  57px;
+    out property <length> headline-large: 32px;
+    out property <length> headline-med:   28px;
+    out property <length> title-large:    22px;
+    out property <length> title-med:      16px;
+    out property <length> body-large:     16px;
+    out property <length> body-med:       14px;
+    out property <length> label-large:    14px;
+    out property <length> label-med:      12px;
+}
+
+// ─── Reusable: Avatar chip with initials ─────────────────────────────────────
+component ContactAvatar {
+    in property <string> initials;
+    in property <color>  bg-color: Theme.primary-container;
+    in property <length> size: 48px;
+
+    width: size;
+    height: size;
+
+    Rectangle {
+        border-radius: size / 2;
+        background: bg-color;
+        width: size;
+        height: size;
+
+        Text {
+            text: initials;
+            font-size: size * 0.35;
+            color: Theme.primary;
+            font-weight: 600;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+// ─── Reusable: Material 3 Filled Button ──────────────────────────────────────
+component FilledButton {
+    in property <string>   text;
+    in property <color>    bg: Theme.primary;
+    in property <color>    fg: Theme.on-primary;
+    callback clicked;
+
+    min-height: 40px;
+    min-width: 64px;
+
+    Rectangle {
+        background: bg;
+        border-radius: Theme.corner-full;
+        width: parent.width;
+        height: parent.height;
+
+        Text {
+            text: parent.parent.text;
+            color: fg;
+            font-size: Theme.label-large;
+            font-weight: 500;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+
+        TouchArea {
+            clicked => { root.clicked(); }
+            // Ripple placeholder — Slint 1.9 opacity animation
+            Rectangle {
+                background: #FFFFFF30;
+                border-radius: Theme.corner-full;
+                opacity: self.has-hover ? 0.08 : 0.0;
+                animate opacity { duration: 150ms; }
+                has-hover: false;  // set by TouchArea hover state
+                property <bool> has-hover: false;
+            }
+        }
+    }
+}
+
+// ─── Reusable: Icon Button ────────────────────────────────────────────────────
+component IconButton {
+    in property <image>  icon;
+    in property <string> tooltip;
+    in property <color>  tint: Theme.on-surface-variant;
+    callback clicked;
+
+    width: 48px;
+    height: 48px;
+
+    Rectangle {
+        border-radius: 24px;
+        background: touch.has-hover ? Theme.surface-variant : transparent;
+        animate background { duration: 120ms; }
+
+        Image {
+            source: icon;
+            colorize: tint;
+            width: 24px;
+            height: 24px;
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+        }
+
+        touch := TouchArea {
+            clicked => { root.clicked(); }
+        }
+    }
+}
+
+// ─── Reusable: Search Bar (M3 style) ─────────────────────────────────────────
+component SearchBar {
+    in-out property <string> text;
+    in property <string>     placeholder: "Search contacts…";
+    callback changed(string);
+    callback clear-clicked;
+
+    height: 56px;
+
+    Rectangle {
+        background: Theme.surface-variant;
+        border-radius: Theme.corner-full;
+        width: parent.width;
+        height: parent.height;
+
+        HorizontalLayout {
+            padding: 16px;
+            spacing: 12px;
+            alignment: center;
+
+            // Search icon
+            Rectangle {
+                width: 24px; height: 24px;
+                // SVG path placeholder — actual icon via Image in production
+                Text { text: "🔍"; font-size: 18px; horizontal-alignment: center; vertical-alignment: center; }
+            }
+
+            TextInput {
+                text <=> root.text;
+                placeholder-text: placeholder;
+                font-size: Theme.body-large;
+                color: Theme.on-surface;
+                vertical-alignment: center;
+                edited => { root.changed(self.text); }
+            }
+
+            // Clear button
+            if root.text != "" : Rectangle {
+                width: 24px; height: 24px;
+                TouchArea {
+                    clicked => { root.text = ""; root.clear-clicked(); }
+                }
+                Text { text: "✕"; font-size: 16px; color: Theme.on-surface-variant; horizontal-alignment: center; vertical-alignment: center; }
+            }
+        }
+    }
+}
+
+// ─── Reusable: Sort Chip ──────────────────────────────────────────────────────
+component SortChip {
+    in property <string>  label;
+    in property <bool>    selected: false;
+    callback clicked;
+
+    height: 32px;
+    width: label.len() * 9px + 32px;   // approximate auto-width
+
+    Rectangle {
+        background: selected ? Theme.secondary-container : transparent;
+        border-radius: Theme.corner-full;
+        border-color: selected ? transparent : Theme.outline;
+        border-width: 1px;
+
+        Text {
+            text: label;
+            color: selected ? Theme.secondary : Theme.on-surface-variant;
+            font-size: Theme.label-large;
+            font-weight: selected ? 600 : 400;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+
+        TouchArea { clicked => { root.clicked(); } }
+    }
+}
+
+// ─── Data Structs (must match Rust structs) ───────────────────────────────────
+export struct ContactEntry {
+    id:           string,
+    display-name: string,
+    first-name:   string,
+    last-name:    string,
+    phone:        string,
+    initials:     string,
+    is-favorite:  bool,
+    avatar-color: color,
+}
+
+export struct CallRecord {
+    id:           string,
+    contact-name: string,
+    phone:        string,
+    direction:    string,   // "incoming" | "outgoing" | "missed"
+    duration-sec: int,
+    timestamp:    string,
+    initials:     string,
+}
+
+// ─── Contact List Row ─────────────────────────────────────────────────────────
+component ContactRow {
+    in property <ContactEntry> contact;
+    in property <bool>         is-selected: false;
+    callback clicked;
+    callback call-clicked;
+    callback favorite-clicked;
+
+    height: 72px;
+
+    Rectangle {
+        background: is-selected ? Theme.primary-container.with-alpha(0.3) : transparent;
+        border-radius: Theme.corner-medium;
+        animate background { duration: 150ms; }
+
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 8px;
+            spacing: 16px;
+            alignment: center;
+
+            ContactAvatar {
+                initials: contact.initials;
+                bg-color: contact.avatar-color;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                horizontal-stretch: 1;
+
+                Text {
+                    text: contact.display-name;
+                    font-size: Theme.body-large;
+                    font-weight: 500;
+                    color: Theme.on-surface;
+                    overflow: elide;
+                }
+                Text {
+                    text: contact.phone;
+                    font-size: Theme.body-med;
+                    color: Theme.on-surface-variant;
+                }
+            }
+
+            // Favorite star
+            Rectangle {
+                width: 40px; height: 40px;
+                border-radius: 20px;
+                background: fav-touch.has-hover ? Theme.surface-variant : transparent;
+                animate background { duration: 120ms; }
+
+                Text {
+                    text: contact.is-favorite ? "★" : "☆";
+                    font-size: 20px;
+                    color: contact.is-favorite ? #FFC107 : Theme.on-surface-variant;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+                fav-touch := TouchArea { clicked => { root.favorite-clicked(); } }
+            }
+
+            // Call FAB mini
+            Rectangle {
+                width: 40px; height: 40px;
+                border-radius: 20px;
+                background: Theme.secondary-container;
+
+                Text {
+                    text: "📞";
+                    font-size: 18px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+                TouchArea { clicked => { root.call-clicked(); } }
+            }
+        }
+
+        TouchArea { clicked => { root.clicked(); } z: -1; }
+    }
+}
+
+// ─── Call History Row ─────────────────────────────────────────────────────────
+component CallRow {
+    in property <CallRecord> record;
+
+    height: 64px;
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        spacing: 12px;
+        alignment: center;
+
+        // Direction indicator
+        Rectangle {
+            width: 40px; height: 40px;
+            border-radius: 20px;
+            background: record.direction == "missed"
+                        ? Theme.error.with-alpha(0.12)
+                        : Theme.primary-container;
+
+            Text {
+                text: record.direction == "incoming" ? "↙" :
+                      record.direction == "outgoing" ? "↗" : "↙";
+                font-size: 20px;
+                color: record.direction == "missed" ? Theme.error : Theme.primary;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 2px;
+            horizontal-stretch: 1;
+
+            Text {
+                text: record.contact-name;
+                font-size: Theme.body-large;
+                font-weight: 500;
+                color: record.direction == "missed" ? Theme.error : Theme.on-surface;
+                overflow: elide;
+            }
+            Text {
+                text: record.timestamp + "  ·  " + record.duration-sec + "s";
+                font-size: Theme.body-med;
+                color: Theme.on-surface-variant;
+            }
+        }
+
+        Text {
+            text: "📞";
+            font-size: 20px;
+            vertical-alignment: center;
+        }
+    }
+}
+
+// ─── Dialpad Component ────────────────────────────────────────────────────────
+component Dialpad {
+    in-out property <string> number;
+    callback call-pressed;
+    callback backspace-pressed;
+
+    VerticalLayout {
+        spacing: 0px;
+        alignment: center;
+
+        // Number display
+        Rectangle {
+            height: 72px;
+            background: transparent;
+
+            HorizontalLayout {
+                padding-horizontal: 24px;
+                alignment: center;
+                spacing: 8px;
+
+                Text {
+                    text: number != "" ? number : "Enter number";
+                    font-size: number != "" ? 32px : 20px;
+                    color: number != "" ? Theme.on-surface : Theme.on-surface-variant;
+                    horizontal-stretch: 1;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    overflow: elide;
+                }
+
+                if number != "" : Rectangle {
+                    width: 48px; height: 48px;
+                    border-radius: 24px;
+                    background: bs-touch.has-hover ? Theme.surface-variant : transparent;
+                    Text {
+                        text: "⌫";
+                        font-size: 22px;
+                        color: Theme.on-surface-variant;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    bs-touch := TouchArea { clicked => { root.backspace-pressed(); } }
+                }
+            }
+        }
+
+        // Divider
+        Rectangle { height: 1px; background: Theme.outline-variant; }
+
+        // Keys grid — 3 × 4
+        GridLayout {
+            padding: 16px;
+            spacing: 8px;
+
+            for row-data in [
+                [{key:"1",sub:""},{key:"2",sub:"ABC"},{key:"3",sub:"DEF"}],
+                [{key:"4",sub:"GHI"},{key:"5",sub:"JKL"},{key:"6",sub:"MNO"}],
+                [{key:"7",sub:"PQRS"},{key:"8",sub:"TUV"},{key:"9",sub:"WXYZ"}],
+                [{key:"*",sub:""},{key:"0",sub:"+"},{key:"#",sub:""}]
+            ] : HorizontalLayout {
+                spacing: 8px;
+                for cell in row-data : Rectangle {
+                    height: 64px;
+                    horizontal-stretch: 1;
+                    border-radius: Theme.corner-large;
+                    background: cell-touch.has-hover ? Theme.surface-variant : Theme.surface;
+
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 1px;
+                        Text {
+                            text: cell.key;
+                            font-size: 24px;
+                            font-weight: 400;
+                            color: Theme.on-surface;
+                            horizontal-alignment: center;
+                        }
+                        if cell.sub != "" : Text {
+                            text: cell.sub;
+                            font-size: 9px;
+                            color: Theme.on-surface-variant;
+                            horizontal-alignment: center;
+                            letter-spacing: 1px;
+                        }
+                    }
+
+                    cell-touch := TouchArea {
+                        clicked => {
+                            root.number += cell.key;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Call button
+        Rectangle {
+            height: 80px;
+            HorizontalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 64px; height: 64px;
+                    border-radius: 32px;
+                    background: #4CAF50;
+
+                    Text {
+                        text: "📞";
+                        font-size: 28px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+
+                    TouchArea { clicked => { root.call-pressed(); } }
+                }
+            }
+        }
+    }
+}
+
+// ─── Contact Detail Panel ─────────────────────────────────────────────────────
+component ContactDetail {
+    in property <ContactEntry> contact;
+    in property <bool>         visible: false;
+    callback close;
+    callback call(string);
+    callback edit;
+    callback delete;
+
+    if visible : Rectangle {
+        background: Theme.surface;
+        border-radius: Theme.corner-large;
+
+        VerticalLayout {
+            spacing: 0px;
+
+            // Header
+            Rectangle {
+                height: 200px;
+                background: contact.avatar-color.mix(Theme.surface, 0.7);
+                border-radius: Theme.corner-large;
+                // clip to top corners only via layered approach
+
+                VerticalLayout {
+                    alignment: end;
+                    padding: 20px;
+                    spacing: 12px;
+
+                    ContactAvatar {
+                        initials: contact.initials;
+                        bg-color: contact.avatar-color;
+                        size: 80px;
+                        x: (parent.width - 80px) / 2;
+                    }
+
+                    Text {
+                        text: contact.display-name;
+                        font-size: Theme.headline-med;
+                        font-weight: 600;
+                        color: Theme.on-surface;
+                        horizontal-alignment: center;
+                    }
+                }
+
+                // Close button
+                IconButton {
+                    x: parent.width - 56px;
+                    y: 8px;
+                    icon: @image-url("icons/close.svg");
+                    clicked => { root.close(); }
+                }
+            }
+
+            // Action chips row
+            HorizontalLayout {
+                padding: 16px;
+                spacing: 12px;
+                alignment: center;
+
+                // Call chip
+                Rectangle {
+                    width: 80px; height: 56px;
+                    border-radius: Theme.corner-medium;
+                    background: Theme.primary-container;
+                    VerticalLayout {
+                        alignment: center;
+                        Text { text: "📞"; font-size: 20px; horizontal-alignment: center; }
+                        Text { text: "Call"; font-size: 11px; color: Theme.primary; horizontal-alignment: center; }
+                    }
+                    TouchArea { clicked => { root.call(contact.phone); } }
+                }
+
+                // SMS chip
+                Rectangle {
+                    width: 80px; height: 56px;
+                    border-radius: Theme.corner-medium;
+                    background: Theme.secondary-container;
+                    VerticalLayout {
+                        alignment: center;
+                        Text { text: "💬"; font-size: 20px; horizontal-alignment: center; }
+                        Text { text: "SMS"; font-size: 11px; color: Theme.secondary; horizontal-alignment: center; }
+                    }
+                }
+
+                // Edit chip
+                Rectangle {
+                    width: 80px; height: 56px;
+                    border-radius: Theme.corner-medium;
+                    background: Theme.tertiary-container;
+                    VerticalLayout {
+                        alignment: center;
+                        Text { text: "✏️"; font-size: 20px; horizontal-alignment: center; }
+                        Text { text: "Edit"; font-size: 11px; color: Theme.tertiary; horizontal-alignment: center; }
+                    }
+                    TouchArea { clicked => { root.edit(); } }
+                }
+            }
+
+            // Info rows
+            Rectangle {
+                border-radius: Theme.corner-medium;
+                background: Theme.surface-variant.with-alpha(0.4);
+                margin: 16px;
+
+                VerticalLayout {
+                    padding: 16px;
+                    spacing: 0px;
+
+                    // Phone
+                    HorizontalLayout {
+                        height: 52px;
+                        alignment: center;
+                        spacing: 16px;
+                        Text { text: "📞"; font-size: 18px; vertical-alignment: center; }
+                        VerticalLayout {
+                            alignment: center;
+                            horizontal-stretch: 1;
+                            Text { text: "Mobile"; font-size: Theme.label-med; color: Theme.on-surface-variant; }
+                            Text { text: contact.phone; font-size: Theme.body-large; color: Theme.on-surface; }
+                        }
+                    }
+
+                    Rectangle { height: 1px; background: Theme.outline-variant; }
+
+                    // Full name breakdown
+                    HorizontalLayout {
+                        height: 52px;
+                        alignment: center;
+                        spacing: 16px;
+                        Text { text: "👤"; font-size: 18px; vertical-alignment: center; }
+                        VerticalLayout {
+                            alignment: center;
+                            horizontal-stretch: 1;
+                            Text { text: "Name"; font-size: Theme.label-med; color: Theme.on-surface-variant; }
+                            Text {
+                                text: contact.first-name + " " + contact.last-name;
+                                font-size: Theme.body-large;
+                                color: Theme.on-surface;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Delete button
+            HorizontalLayout {
+                padding: 16px;
+                alignment: center;
+                Rectangle {
+                    height: 40px;
+                    width: 160px;
+                    border-radius: Theme.corner-full;
+                    border-color: Theme.error;
+                    border-width: 1px;
+                    background: del-touch.has-hover ? Theme.error.with-alpha(0.08) : transparent;
+                    Text {
+                        text: "Delete Contact";
+                        color: Theme.error;
+                        font-size: Theme.label-large;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    del-touch := TouchArea { clicked => { root.delete(); } }
+                }
+            }
+        }
+    }
+}
+
+// ─── Add / Edit Contact Sheet ─────────────────────────────────────────────────
+component AddContactSheet {
+    in property <bool>           visible: false;
+    in-out property <string>     edit-first;
+    in-out property <string>     edit-last;
+    in-out property <string>     edit-phone;
+    in property <bool>           is-editing: false;
+    callback save;
+    callback cancel;
+
+    if visible : Rectangle {
+        background: Theme.surface;
+        border-radius: Theme.corner-xl;
+        drop-shadow-blur: 16px;
+        drop-shadow-color: #00000033;
+
+        VerticalLayout {
+            padding: 24px;
+            spacing: 16px;
+
+            // Title
+            HorizontalLayout {
+                spacing: 12px;
+                alignment: center;
+                Text {
+                    text: is-editing ? "Edit Contact" : "New Contact";
+                    font-size: Theme.title-large;
+                    font-weight: 600;
+                    color: Theme.on-surface;
+                    horizontal-stretch: 1;
+                }
+                Rectangle {
+                    width: 32px; height: 32px;
+                    border-radius: 16px;
+                    Text { text: "✕"; font-size: 18px; color: Theme.on-surface-variant; horizontal-alignment: center; vertical-alignment: center; }
+                    TouchArea { clicked => { root.cancel(); } }
+                }
+            }
+
+            // Avatar preview
+            HorizontalLayout {
+                alignment: center;
+                ContactAvatar {
+                    initials: (edit-first.len() > 0 ? edit-first.to-uppercase().slice(0, 1) : "?")
+                              + (edit-last.len() > 0 ? edit-last.to-uppercase().slice(0, 1) : "");
+                    size: 72px;
+                }
+            }
+
+            // First Name
+            Rectangle {
+                height: 56px;
+                border-radius: Theme.corner-small;
+                border-color: Theme.outline;
+                border-width: 1px;
+                background: Theme.surface;
+                HorizontalLayout {
+                    padding-horizontal: 16px;
+                    TextInput {
+                        text <=> edit-first;
+                        placeholder-text: "First name";
+                        font-size: Theme.body-large;
+                        color: Theme.on-surface;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            // Last Name
+            Rectangle {
+                height: 56px;
+                border-radius: Theme.corner-small;
+                border-color: Theme.outline;
+                border-width: 1px;
+                background: Theme.surface;
+                HorizontalLayout {
+                    padding-horizontal: 16px;
+                    TextInput {
+                        text <=> edit-last;
+                        placeholder-text: "Last name";
+                        font-size: Theme.body-large;
+                        color: Theme.on-surface;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            // Phone
+            Rectangle {
+                height: 56px;
+                border-radius: Theme.corner-small;
+                border-color: Theme.outline;
+                border-width: 1px;
+                background: Theme.surface;
+                HorizontalLayout {
+                    padding-horizontal: 16px;
+                    TextInput {
+                        text <=> edit-phone;
+                        placeholder-text: "Mobile number";
+                        font-size: Theme.body-large;
+                        color: Theme.on-surface;
+                        vertical-alignment: center;
+                        input-type: number;
+                    }
+                }
+            }
+
+            // Buttons
+            HorizontalLayout {
+                spacing: 12px;
+
+                // Cancel
+                Rectangle {
+                    height: 40px;
+                    horizontal-stretch: 1;
+                    border-radius: Theme.corner-full;
+                    border-color: Theme.outline;
+                    border-width: 1px;
+                    Text {
+                        text: "Cancel";
+                        font-size: Theme.label-large;
+                        color: Theme.primary;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    TouchArea { clicked => { root.cancel(); } }
+                }
+
+                // Save
+                Rectangle {
+                    height: 40px;
+                    horizontal-stretch: 1;
+                    border-radius: Theme.corner-full;
+                    background: Theme.primary;
+                    Text {
+                        text: is-editing ? "Save" : "Add";
+                        font-size: Theme.label-large;
+                        font-weight: 600;
+                        color: Theme.on-primary;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    TouchArea { clicked => { root.save(); } }
+                }
+            }
+        }
+    }
+}
+
+// ─── In-Call Overlay ──────────────────────────────────────────────────────────
+component InCallScreen {
+    in property <bool>   visible: false;
+    in property <string> contact-name;
+    in property <string> phone;
+    in property <string> status;       // "Dialing…" | "Connected" | "On Hold"
+    in property <string> duration;
+    callback hang-up;
+    callback toggle-mute;
+    callback toggle-speaker;
+
+    if visible : Rectangle {
+        background: #1A1C1E.mix(Theme.primary, 0.15);
+        width: 100%;
+        height: 100%;
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 24px;
+            padding: 32px;
+
+            // Status text
+            Text {
+                text: status;
+                font-size: Theme.body-large;
+                color: #FFFFFF80;
+                horizontal-alignment: center;
+            }
+
+            // Avatar
+            HorizontalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 120px; height: 120px;
+                    border-radius: 60px;
+                    background: Theme.primary-container;
+                    Text {
+                        text: contact-name.len() > 0
+                              ? contact-name.slice(0, 1).to-uppercase()
+                              : "?";
+                        font-size: 48px;
+                        color: Theme.primary;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            // Name & number
+            Text {
+                text: contact-name;
+                font-size: Theme.headline-large;
+                font-weight: 600;
+                color: #FFFFFF;
+                horizontal-alignment: center;
+            }
+            Text {
+                text: phone;
+                font-size: Theme.body-large;
+                color: #FFFFFF80;
+                horizontal-alignment: center;
+            }
+
+            // Duration
+            Text {
+                text: duration;
+                font-size: Theme.title-large;
+                color: #FFFFFFCC;
+                horizontal-alignment: center;
+            }
+
+            // Controls
+            HorizontalLayout {
+                spacing: 24px;
+                alignment: center;
+
+                // Mute
+                Rectangle {
+                    width: 60px; height: 60px;
+                    border-radius: 30px;
+                    background: #FFFFFF20;
+                    Text { text: "🔇"; font-size: 24px; horizontal-alignment: center; vertical-alignment: center; }
+                    TouchArea { clicked => { root.toggle-mute(); } }
+                }
+
+                // Hang up
+                Rectangle {
+                    width: 72px; height: 72px;
+                    border-radius: 36px;
+                    background: Theme.error;
+                    Text { text: "📵"; font-size: 28px; horizontal-alignment: center; vertical-alignment: center; }
+                    TouchArea { clicked => { root.hang-up(); } }
+                }
+
+                // Speaker
+                Rectangle {
+                    width: 60px; height: 60px;
+                    border-radius: 30px;
+                    background: #FFFFFF20;
+                    Text { text: "🔊"; font-size: 24px; horizontal-alignment: center; vertical-alignment: center; }
+                    TouchArea { clicked => { root.toggle-speaker(); } }
+                }
+            }
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROOT WINDOW — AppWindow
+// Exported so Rust code can interact with it via generated bindings.
+// ─────────────────────────────────────────────────────────────────────────────
+export component AppWindow inherits Window {
+    title: "Dialer";
+    min-width: 360px;
+    min-height: 640px;
+    preferred-width: 390px;
+    preferred-height: 844px;
+    background: Theme.surface;
+
+    // ── State properties (set from Rust) ──────────────────────────────────────
+    in-out property <[ContactEntry]> contacts;           // full sorted list
+    in-out property <[ContactEntry]> filtered-contacts;  // after search
+    in-out property <[ContactEntry]> favorites;
+    in-out property <[CallRecord]>   call-history;
+
+    in-out property <int>    selected-tab: 0;   // 0=Contacts 1=Favorites 2=Recent 3=Dialpad
+    in-out property <int>    sort-mode: 0;       // 0=FirstName 1=LastName 2=Number
+    in-out property <string> search-text: "";
+    in-out property <string> dial-number: "";
+
+    // Add/edit sheet
+    in-out property <bool>   show-add-sheet: false;
+    in-out property <bool>   is-editing: false;
+    in-out property <string> edit-id: "";
+    in-out property <string> edit-first: "";
+    in-out property <string> edit-last: "";
+    in-out property <string> edit-phone: "";
+
+    // Detail panel
+    in-out property <bool>         show-detail: false;
+    in-out property <ContactEntry> detail-contact;
+
+    // In-call overlay
+    in-out property <bool>   in-call: false;
+    in-out property <string> call-contact-name: "";
+    in-out property <string> call-phone: "";
+    in-out property <string> call-status: "Dialing…";
+    in-out property <string> call-duration: "0:00";
+
+    // Snackbar
+    in-out property <bool>   show-snack: false;
+    in-out property <string> snack-text: "";
+
+    // ── Rust → UI callbacks ───────────────────────────────────────────────────
+    callback add-contact(string, string, string);     // first, last, phone
+    callback update-contact(string, string, string, string); // id, first, last, phone
+    callback delete-contact(string);                  // id
+    callback toggle-favorite(string);                 // id
+    callback make-call(string, string);               // name, phone
+    callback hang-up-call();
+    callback search-changed(string);
+    callback sort-changed(int);                       // sort-mode
+
+    // ── Layout breakpoint ─────────────────────────────────────────────────────
+    property <bool> expanded-layout: self.width >= 840px;
+
+    // ── Main Layout ───────────────────────────────────────────────────────────
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        background: Theme.surface;
+        clip: true;
+
+        if !expanded-layout : VerticalLayout {
+            // ── COMPACT PHONE LAYOUT ──────────────────────────────────────────
+
+            // Content area (fills remaining height above nav bar)
+            Rectangle {
+                vertical-stretch: 1;
+                clip: true;
+
+                // ── Contacts Tab ──────────────────────────────────────────────
+                if selected-tab == 0 : VerticalLayout {
+                    spacing: 0px;
+
+                    // Top bar
+                    Rectangle {
+                        height: 64px;
+                        background: Theme.surface;
+                        drop-shadow-blur: selected-tab == 0 ? 4px : 0px;
+                        drop-shadow-color: #0000001A;
+
+                        HorizontalLayout {
+                            padding-horizontal: 16px;
+                            alignment: center;
+                            spacing: 8px;
+
+                            Text {
+                                text: "Contacts";
+                                font-size: Theme.title-large;
+                                font-weight: 600;
+                                color: Theme.on-surface;
+                                horizontal-stretch: 1;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    // Search
+                    Rectangle {
+                        height: 72px;
+                        padding-horizontal: 16px;
+                        padding-vertical: 8px;
+                        SearchBar {
+                            width: parent.width - 32px;
+                            x: 16px;
+                            text <=> search-text;
+                            changed(t) => { root.search-changed(t); }
+                            clear-clicked => { root.search-changed(""); }
+                        }
+                    }
+
+                    // Sort chips
+                    HorizontalLayout {
+                        height: 48px;
+                        padding-horizontal: 16px;
+                        spacing: 8px;
+                        alignment: start;
+                        vertical-alignment: center;
+
+                        SortChip {
+                            label: "First Name";
+                            selected: sort-mode == 0;
+                            clicked => { root.sort-changed(0); }
+                        }
+                        SortChip {
+                            label: "Last Name";
+                            selected: sort-mode == 1;
+                            clicked => { root.sort-changed(1); }
+                        }
+                        SortChip {
+                            label: "Number";
+                            selected: sort-mode == 2;
+                            clicked => { root.sort-changed(2); }
+                        }
+                    }
+
+                    // Contact list
+                    ListView {
+                        vertical-stretch: 1;
+                        for c in filtered-contacts : ContactRow {
+                            width: parent.width;
+                            contact: c;
+                            is-selected: show-detail && detail-contact.id == c.id;
+                            clicked => {
+                                root.detail-contact = c;
+                                root.show-detail = true;
+                            }
+                            call-clicked => { root.make-call(c.display-name, c.phone); }
+                            favorite-clicked => { root.toggle-favorite(c.id); }
+                        }
+                    }
+                }
+
+                // ── Favorites Tab ─────────────────────────────────────────────
+                if selected-tab == 1 : VerticalLayout {
+                    // Title
+                    Rectangle {
+                        height: 64px;
+                        HorizontalLayout {
+                            padding-horizontal: 16px;
+                            alignment: center;
+                            Text {
+                                text: "Favorites";
+                                font-size: Theme.title-large;
+                                font-weight: 600;
+                                color: Theme.on-surface;
+                                horizontal-stretch: 1;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    if favorites.length == 0 : Rectangle {
+                        vertical-stretch: 1;
+                        VerticalLayout {
+                            alignment: center;
+                            spacing: 12px;
+                            Text { text: "⭐"; font-size: 48px; horizontal-alignment: center; }
+                            Text {
+                                text: "No favorites yet";
+                                font-size: Theme.body-large;
+                                color: Theme.on-surface-variant;
+                                horizontal-alignment: center;
+                            }
+                            Text {
+                                text: "Tap ☆ on any contact to add";
+                                font-size: Theme.body-med;
+                                color: Theme.on-surface-variant;
+                                horizontal-alignment: center;
+                            }
+                        }
+                    }
+
+                    ListView {
+                        vertical-stretch: 1;
+                        for c in favorites : ContactRow {
+                            width: parent.width;
+                            contact: c;
+                            clicked => {
+                                root.detail-contact = c;
+                                root.show-detail = true;
+                            }
+                            call-clicked => { root.make-call(c.display-name, c.phone); }
+                            favorite-clicked => { root.toggle-favorite(c.id); }
+                        }
+                    }
+                }
+
+                // ── Recents Tab ───────────────────────────────────────────────
+                if selected-tab == 2 : VerticalLayout {
+                    Rectangle {
+                        height: 64px;
+                        HorizontalLayout {
+                            padding-horizontal: 16px;
+                            alignment: center;
+                            Text {
+                                text: "Recents";
+                                font-size: Theme.title-large;
+                                font-weight: 600;
+                                color: Theme.on-surface;
+                                horizontal-stretch: 1;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    if call-history.length == 0 : Rectangle {
+                        vertical-stretch: 1;
+                        VerticalLayout {
+                            alignment: center;
+                            spacing: 12px;
+                            Text { text: "📋"; font-size: 48px; horizontal-alignment: center; }
+                            Text {
+                                text: "No call history";
+                                font-size: Theme.body-large;
+                                color: Theme.on-surface-variant;
+                                horizontal-alignment: center;
+                            }
+                        }
+                    }
+
+                    ListView {
+                        vertical-stretch: 1;
+                        for r in call-history : CallRow {
+                            width: parent.width;
+                            record: r;
+                        }
+                    }
+                }
+
+                // ── Dialpad Tab ───────────────────────────────────────────────
+                if selected-tab == 3 : Dialpad {
+                    width: parent.width;
+                    height: parent.height;
+                    number <=> dial-number;
+                    call-pressed => {
+                        if dial-number != "" {
+                            root.make-call("", dial-number);
+                        }
+                    }
+                    backspace-pressed => {
+                        if dial-number.len() > 0 {
+                            dial-number = dial-number.slice(0, dial-number.len() - 1);
+                        }
+                    }
+                }
+            }
+
+            // ── Bottom Navigation Bar ─────────────────────────────────────────
+            Rectangle {
+                height: 80px;
+                background: Theme.surface;
+                border-color: Theme.outline-variant;
+                border-width: 0px;
+                drop-shadow-blur: 8px;
+                drop-shadow-offset-y: -2px;
+                drop-shadow-color: #0000001A;
+
+                HorizontalLayout {
+                    alignment: space-around;
+                    padding-bottom: 8px;
+
+                    for tab-data in [
+                        {icon: "👥", label: "Contacts",  idx: 0},
+                        {icon: "⭐", label: "Favorites", idx: 1},
+                        {icon: "🕐", label: "Recents",   idx: 2},
+                        {icon: "🔢", label: "Dialpad",   idx: 3},
+                    ] : Rectangle {
+                        horizontal-stretch: 1;
+                        TouchArea {
+                            clicked => { root.selected-tab = tab-data.idx; }
+
+                            VerticalLayout {
+                                alignment: center;
+                                spacing: 4px;
+                                padding-top: 12px;
+
+                                // Active indicator pill
+                                Rectangle {
+                                    height: 32px;
+                                    width: selected-tab == tab-data.idx ? 64px : 0px;
+                                    border-radius: 16px;
+                                    background: selected-tab == tab-data.idx ? Theme.secondary-container : transparent;
+                                    x: (parent.width - self.width) / 2;
+                                    animate width { duration: 200ms; easing: ease-in-out; }
+
+                                    Text {
+                                        text: tab-data.icon;
+                                        font-size: 20px;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                        opacity: selected-tab == tab-data.idx ? 1.0 : 0.6;
+                                    }
+                                }
+
+                                Text {
+                                    text: tab-data.label;
+                                    font-size: 11px;
+                                    font-weight: selected-tab == tab-data.idx ? 600 : 400;
+                                    color: selected-tab == tab-data.idx ? Theme.primary : Theme.on-surface-variant;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if expanded-layout : HorizontalLayout {
+            // ── EXPANDED / TABLET / TV LAYOUT ─────────────────────────────────
+
+            // Navigation Rail (left sidebar)
+            Rectangle {
+                width: 80px;
+                background: Theme.surface-variant.with-alpha(0.4);
+                border-radius: 0px;
+
+                VerticalLayout {
+                    padding-top: 16px;
+                    spacing: 4px;
+                    alignment: start;
+
+                    for tab-data in [
+                        {icon: "👥", label: "Contacts",  idx: 0},
+                        {icon: "⭐", label: "Favorites", idx: 1},
+                        {icon: "🕐", label: "Recents",   idx: 2},
+                        {icon: "🔢", label: "Dialpad",   idx: 3},
+                    ] : Rectangle {
+                        height: 72px;
+                        width: 80px;
+                        TouchArea {
+                            clicked => { root.selected-tab = tab-data.idx; }
+
+                            VerticalLayout {
+                                alignment: center;
+                                spacing: 4px;
+
+                                Rectangle {
+                                    width: 56px; height: 32px;
+                                    x: (parent.width - self.width) / 2;
+                                    border-radius: 16px;
+                                    background: selected-tab == tab-data.idx ? Theme.secondary-container : transparent;
+
+                                    Text {
+                                        text: tab-data.icon;
+                                        font-size: 20px;
+                                        horizontal-alignment: center;
+                                        vertical-alignment: center;
+                                    }
+                                }
+
+                                Text {
+                                    text: tab-data.label;
+                                    font-size: 10px;
+                                    font-weight: selected-tab == tab-data.idx ? 600 : 400;
+                                    color: selected-tab == tab-data.idx ? Theme.primary : Theme.on-surface-variant;
+                                    horizontal-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Divider
+            Rectangle { width: 1px; background: Theme.outline-variant; }
+
+            // Master list pane
+            VerticalLayout {
+                width: 320px;
+
+                // Search
+                Rectangle {
+                    height: 80px;
+                    padding: 12px;
+                    SearchBar {
+                        width: parent.width - 24px;
+                        x: 12px;
+                        y: 12px;
+                        text <=> search-text;
+                        changed(t) => { root.search-changed(t); }
+                        clear-clicked => { root.search-changed(""); }
+                    }
+                }
+
+                // Sort chips
+                HorizontalLayout {
+                    height: 44px;
+                    padding-horizontal: 12px;
+                    spacing: 6px;
+                    alignment: start;
+                    vertical-alignment: center;
+                    SortChip { label: "First"; selected: sort-mode==0; clicked => { root.sort-changed(0); } }
+                    SortChip { label: "Last";  selected: sort-mode==1; clicked => { root.sort-changed(1); } }
+                    SortChip { label: "Num";   selected: sort-mode==2; clicked => { root.sort-changed(2); } }
+                }
+
+                ListView {
+                    vertical-stretch: 1;
+                    for c in filtered-contacts : ContactRow {
+                        width: parent.width;
+                        contact: c;
+                        is-selected: show-detail && detail-contact.id == c.id;
+                        clicked => {
+                            root.detail-contact = c;
+                            root.show-detail = true;
+                        }
+                        call-clicked => { root.make-call(c.display-name, c.phone); }
+                        favorite-clicked => { root.toggle-favorite(c.id); }
+                    }
+                }
+            }
+
+            // Divider
+            Rectangle { width: 1px; background: Theme.outline-variant; }
+
+            // Detail pane
+            Rectangle {
+                horizontal-stretch: 1;
+                background: Theme.surface;
+
+                if show-detail : ContactDetail {
+                    width: parent.width;
+                    height: parent.height;
+                    contact: detail-contact;
+                    visible: true;
+                    close => { root.show-detail = false; }
+                    call(p) => { root.make-call(detail-contact.display-name, p); }
+                    edit => {
+                        root.edit-id    = detail-contact.id;
+                        root.edit-first = detail-contact.first-name;
+                        root.edit-last  = detail-contact.last-name;
+                        root.edit-phone = detail-contact.phone;
+                        root.is-editing = true;
+                        root.show-add-sheet = true;
+                    }
+                    delete => {
+                        root.delete-contact(detail-contact.id);
+                        root.show-detail = false;
+                    }
+                }
+
+                if !show-detail : VerticalLayout {
+                    alignment: center;
+                    spacing: 12px;
+                    Text { text: "👈"; font-size: 48px; horizontal-alignment: center; }
+                    Text {
+                        text: "Select a contact";
+                        font-size: Theme.body-large;
+                        color: Theme.on-surface-variant;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // ── FAB (Add Contact) — always visible except on Dialpad tab ──────────
+        if selected-tab != 3 : Rectangle {
+            x: parent.width - 76px;
+            y: parent.height - (expanded-layout ? 76px : 156px);
+            width: 56px;
+            height: 56px;
+            border-radius: Theme.corner-large;
+            background: Theme.fab-color;
+            drop-shadow-blur: 6px;
+            drop-shadow-color: #00000033;
+
+            Text {
+                text: "+";
+                font-size: 28px;
+                font-weight: 300;
+                color: Theme.on-primary;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+
+            TouchArea {
+                clicked => {
+                    root.edit-first = "";
+                    root.edit-last  = "";
+                    root.edit-phone = "";
+                    root.is-editing = false;
+                    root.show-add-sheet = true;
+                }
+            }
+        }
+
+        // ── Add/Edit Sheet (modal overlay) ────────────────────────────────────
+        if show-add-sheet : Rectangle {
+            background: #00000066;
+            width: parent.width;
+            height: parent.height;
+            TouchArea { clicked => { root.show-add-sheet = false; } z: -1; }
+
+            AddContactSheet {
+                width: min(parent.width - 32px, 480px);
+                x: (parent.width - self.width) / 2;
+                y: parent.height - self.height - 16px;
+                visible: true;
+                edit-first <=> root.edit-first;
+                edit-last  <=> root.edit-last;
+                edit-phone <=> root.edit-phone;
+                is-editing: root.is-editing;
+                save => {
+                    if root.is-editing {
+                        root.update-contact(root.edit-id, root.edit-first, root.edit-last, root.edit-phone);
+                    } else {
+                        root.add-contact(root.edit-first, root.edit-last, root.edit-phone);
+                    }
+                    root.show-add-sheet = false;
+                }
+                cancel => { root.show-add-sheet = false; }
+            }
+        }
+
+        // ── Contact Detail (modal on compact layout) ──────────────────────────
+        if show-detail && !expanded-layout : Rectangle {
+            background: #00000066;
+            width: parent.width;
+            height: parent.height;
+            TouchArea { clicked => { root.show-detail = false; } z: -1; }
+
+            ContactDetail {
+                width: min(parent.width, 480px);
+                height: min(parent.height * 0.85, 600px);
+                x: (parent.width - self.width) / 2;
+                y: (parent.height - self.height) / 2;
+                contact: detail-contact;
+                visible: true;
+                close => { root.show-detail = false; }
+                call(p) => { root.make-call(detail-contact.display-name, p); }
+                edit => {
+                    root.edit-id    = detail-contact.id;
+                    root.edit-first = detail-contact.first-name;
+                    root.edit-last  = detail-contact.last-name;
+                    root.edit-phone = detail-contact.phone;
+                    root.is-editing = true;
+                    root.show-detail = false;
+                    root.show-add-sheet = true;
+                }
+                delete => {
+                    root.delete-contact(detail-contact.id);
+                    root.show-detail = false;
+                }
+            }
+        }
+
+        // ── In-Call Overlay ───────────────────────────────────────────────────
+        InCallScreen {
+            width: parent.width;
+            height: parent.height;
+            visible: in-call;
+            contact-name: call-contact-name;
+            phone: call-phone;
+            status: call-status;
+            duration: call-duration;
+            hang-up => { root.hang-up-call(); }
+            toggle-mute => { /* TODO: mute logic */ }
+            toggle-speaker => { /* TODO: speaker logic */ }
+        }
+
+        // ── Snackbar ──────────────────────────────────────────────────────────
+        if show-snack : Rectangle {
+            x: (parent.width - self.width) / 2;
+            y: parent.height - 120px;
+            width: min(parent.width - 32px, 400px);
+            height: 48px;
+            border-radius: Theme.corner-small;
+            background: Theme.inverse-surface;
+
+            Text {
+                text: snack-text;
+                color: Theme.inverse-on-surface;
+                font-size: Theme.body-med;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                padding-horizontal: 16px;
+            }
+        }
+    }
+}

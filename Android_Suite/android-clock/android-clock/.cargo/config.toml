@@ -1,0 +1,39 @@
+# .cargo/config.toml
+# ============================================================================
+# Cargo Build Configuration
+# ============================================================================
+# These settings apply globally to all builds in this project.
+
+[build]
+# Use all CPU cores for faster compilation
+jobs = 0  # 0 = use num_cpus
+
+[target.aarch64-linux-android]
+linker = "aarch64-linux-android26-clang"
+ar = "llvm-ar"
+
+[target.armv7-linux-androideabi]
+linker = "armv7a-linux-androideabi26-clang"
+ar = "llvm-ar"
+
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+
+[target.x86_64-unknown-linux-gnu]
+# Use mold linker if available — significantly faster than GNU ld
+# Install: sudo apt install mold (Ubuntu) or cargo install mold
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+
+[alias]
+# Convenient aliases
+b = "build"
+br = "build --release"
+t = "test"
+c = "check"
+cl = "clippy -- -D warnings"  # Fail on any clippy warning
+
+# ── Android Build Aliases ─────────────────────────────────────────────────────
+# Usage: cargo android-arm64 (requires cargo-ndk: cargo install cargo-ndk)
+android-arm64 = "ndk --target aarch64-linux-android --android-platform 26 -- build --release"
+android-arm = "ndk --target armv7-linux-androideabi --android-platform 26 -- build --release"

@@ -1,0 +1,24 @@
+# Rust
+/target/
+/dist/
+Cargo.lock  # We DO commit Cargo.lock for binary crates (reproducible builds)
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Android
+*.apk
+*.aab
+*.keystore  # NEVER commit signing keys!
+
+# macOS
+.DS_Store
+
+# Generated
+vendor/
+
+# Flatpak build
+build-dir/
+.flatpak-builder/

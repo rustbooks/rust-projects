@@ -1,0 +1,2 @@
+This file should be replaced with a proper 512x512 PNG icon.
+Place the icon at assets/icon.png before building.

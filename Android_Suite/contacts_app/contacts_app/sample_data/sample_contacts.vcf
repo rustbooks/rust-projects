@@ -1,0 +1,63 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Sharma;Rahul;;;
+FN:Rahul Sharma
+TEL;TYPE=CELL:+91 98765 43210
+EMAIL:rahul.sharma@example.com
+ORG:Tech Solutions Pvt Ltd
+TITLE:Senior Developer
+CATEGORIES:Work
+NOTE:Met at conference 2024
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+N:पाटील;प्रिया;;;
+FN:प्रिया पाटील
+TEL;TYPE=CELL:+91 91234 56789
+EMAIL:priya.patil@example.com
+ORG:Marathi Tech
+TITLE:Product Manager
+CATEGORIES:Work,Friends
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+N:देशमुख;राम;;;
+FN:राम देशमुख
+TEL;TYPE=CELL:+91 90000 11111
+TEL;TYPE=HOME:+91 22 1234 5678
+EMAIL:ram.deshmukh@example.com
+CATEGORIES:Family
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+N:Patel;Anita;;;
+FN:Anita Patel
+TEL;TYPE=CELL:+91 99887 76655
+EMAIL:anita.patel@example.com
+ORG:ABC Corp
+TITLE:HR Manager
+CATEGORIES:Work
+X-CONTACTS-APP-FAVORITE:TRUE
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+N:Kumar;Vijay;;;
+FN:Vijay Kumar
+TEL;TYPE=CELL:+91 88776 65544
+EMAIL:vijay.kumar@example.com
+URL:https://vijaykumar.dev
+NOTE:Freelance Designer
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+N:शिंदे;सुनीता;;;
+FN:सुनीता शिंदे
+TEL;TYPE=CELL:+91 77665 54433
+CATEGORIES:Family
+X-CONTACTS-APP-FAVORITE:TRUE
+END:VCARD

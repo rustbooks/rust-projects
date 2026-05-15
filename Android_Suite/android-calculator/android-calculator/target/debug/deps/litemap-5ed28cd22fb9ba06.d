@@ -1,0 +1,11 @@
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/litemap-5ed28cd22fb9ba06.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/map.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/slice_impl.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/vec_impl.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/liblitemap-5ed28cd22fb9ba06.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/map.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/slice_impl.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/vec_impl.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/liblitemap-5ed28cd22fb9ba06.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/map.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/mod.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/slice_impl.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/vec_impl.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/map.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/mod.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/slice_impl.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/litemap-0.8.2/src/store/vec_impl.rs:

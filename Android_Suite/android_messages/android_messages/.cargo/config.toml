@@ -1,0 +1,44 @@
+# .cargo/config.toml
+# Cross-compilation targets and linker configuration.
+# ─ Android targets require the NDK toolchain in PATH.
+# ─ Desktop targets use the system linker by default.
+
+[build]
+# Default to native target when no --target flag is given.
+# Uncomment to override:
+# target = "aarch64-linux-android"
+
+# ── Android AArch64 (most modern phones) ─────────────────────────────────────
+[target.aarch64-linux-android]
+ar     = "aarch64-linux-android-ar"
+linker = "aarch64-linux-android35-clang"
+
+# ── Android ARMv7 (older 32-bit phones) ──────────────────────────────────────
+[target.armv7-linux-androideabi]
+ar     = "arm-linux-androideabi-ar"
+linker = "armv7a-linux-androideabi35-clang"
+
+# ── Android x86_64 (emulator) ────────────────────────────────────────────────
+[target.x86_64-linux-android]
+ar     = "x86_64-linux-android-ar"
+linker = "x86_64-linux-android35-clang"
+
+# ── Linux desktop ─────────────────────────────────────────────────────────────
+[target.x86_64-unknown-linux-gnu]
+# Uses system cc / ld — no special config needed.
+
+# ── Windows MSVC ──────────────────────────────────────────────────────────────
+[target.x86_64-pc-windows-msvc]
+# Uses MSVC link.exe — install VS Build Tools.
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+[target.aarch64-apple-darwin]
+# Apple Silicon — uses Xcode clang automatically.
+
+[target.x86_64-apple-darwin]
+# Intel Mac.
+
+# ── Release size optimisations applied to all targets ────────────────────────
+[profile.release]
+# Already set in Cargo.toml; repeated here as documentation.
+# opt-level = "z", lto = true, strip = true, panic = "abort"

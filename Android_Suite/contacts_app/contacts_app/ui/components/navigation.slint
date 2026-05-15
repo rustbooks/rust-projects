@@ -1,0 +1,115 @@
+// ui/components/navigation.slint
+// Material 3 Bottom Navigation Bar
+// Adapts to phone (bottom bar) vs wide screen (rail — handled in main.slint)
+
+import { AppTheme } from "../themes/theme.slint";
+
+export component NavigationBar {
+    in-out property <int> tab-index: 0;
+    callback tabs-changed(int);
+
+    preferred-height: 80px;
+    background: AppTheme.surface-container;
+
+    // Top divider line
+    Rectangle {
+        y: 0;
+        height: 1px;
+        background: AppTheme.outline-variant;
+    }
+
+    HorizontalLayout {
+        padding-top: 8px;
+        padding-bottom: 16px;
+
+        NavTab {
+            icon: "☎";
+            label: "All";
+            selected: root.tab-index == 0;
+            clicked => { root.tab-index = 0; root.tabs-changed(0); }
+        }
+        NavTab {
+            icon: "★";
+            label: "Favorites";
+            selected: root.tab-index == 1;
+            clicked => { root.tab-index = 1; root.tabs-changed(1); }
+        }
+        NavTab {
+            icon: "⊞";
+            label: "Groups";
+            selected: root.tab-index == 2;
+            clicked => { root.tab-index = 2; root.tabs-changed(2); }
+        }
+    }
+}
+
+component NavTab {
+    in property <string> icon;
+    in property <string> label;
+    in property <bool> selected: false;
+    callback clicked;
+
+    horizontal-stretch: 1;
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+
+        // Ripple effect on press
+        Rectangle {
+            width: 64px;
+            height: 32px;
+            x: (parent.width - self.width) / 2;
+            border-radius: 16px;
+            background: touch.pressed ? AppTheme.primary.with-alpha(0.12)
+                       : selected ? AppTheme.secondary-container
+                       : transparent;
+            animate background { duration: AppTheme.motion-short3; }
+        }
+    }
+
+    VerticalLayout {
+        spacing: 4px;
+        alignment: center;
+
+        // Active indicator pill
+        Rectangle {
+            width: selected ? 64px : 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: selected ? AppTheme.secondary-container : transparent;
+            x: (parent.width - self.width) / 2;
+
+            animate width { duration: AppTheme.motion-medium2; easing: ease-out; }
+            animate background { duration: AppTheme.motion-short3; }
+
+            Text {
+                text: root.icon;
+                font-size: 18px;
+                color: selected ? AppTheme.on-secondary-container : AppTheme.on-surface-variant;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                width: parent.width;
+                height: parent.height;
+
+                animate color { duration: AppTheme.motion-short3; }
+            }
+        }
+
+        Text {
+            text: root.label;
+            font-size: AppTheme.type-label-medium / 1px * 1px;
+            font-weight: selected ? 700 : 400;
+            color: selected ? AppTheme.on-surface : AppTheme.on-surface-variant;
+            horizontal-alignment: center;
+
+            animate color { duration: AppTheme.motion-short3; }
+        }
+    }
+}
+
+// Reusable NavItem struct for dynamic nav
+export struct NavItem {
+    icon: string,
+    label: string,
+    page-id: int,
+}

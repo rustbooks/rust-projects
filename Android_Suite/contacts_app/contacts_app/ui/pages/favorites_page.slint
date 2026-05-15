@@ -1,0 +1,104 @@
+// ui/pages/favorites_page.slint
+// Favorites tab — filtered view of starred contacts.
+
+import { AppTheme } from "../themes/theme.slint";
+import { ContactEntry } from "../main.slint";
+import { ContactAvatar } from "../components/contact_avatar.slint";
+
+export component FavoritesPage {
+    in property <[ContactEntry]> contacts: [];
+    callback contact-selected(ContactEntry);
+    callback back-clicked;
+
+    VerticalLayout {
+        // ── App Bar ───────────────────────────────────────────────────────────
+        Rectangle {
+            height: 64px;
+            background: AppTheme.surface;
+
+            Text {
+                text: "Favorites";
+                font-size: AppTheme.type-title-large / 1px * 1px;
+                font-weight: 700;
+                color: AppTheme.on-surface;
+                x: 16px;
+                vertical-alignment: center;
+                height: parent.height;
+            }
+        }
+
+        // ── Grid Layout for favorites (2 columns on narrow, 4 on wide) ────────
+        Flickable {
+            horizontal-stretch: 1;
+            vertical-stretch: 1;
+            viewport-height: fav-grid.preferred-height + 32px;
+
+            fav-grid := GridLayout {
+                padding: 16px;
+                spacing: 12px;
+
+                for contact[i] in root.contacts: FavCard {
+                    col: mod(i, 2);
+                    contact: contact;
+                    tapped => { root.contact-selected(contact); }
+                }
+            }
+        }
+
+        if root.contacts.length == 0: Rectangle {
+            height: 300px;
+            VerticalLayout {
+                alignment: center;
+                spacing: 16px;
+
+                Text { text: "★"; font-size: 64px; horizontal-alignment: center; opacity: 0.3; }
+                Text {
+                    text: "No favorites yet\nStar a contact to see it here";
+                    font-size: AppTheme.type-body-large / 1px * 1px;
+                    color: AppTheme.on-surface-variant;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+component FavCard {
+    in property <ContactEntry> contact;
+    callback tapped;
+
+    height: 120px;
+
+    touch := TouchArea {
+        clicked => { root.tapped(); }
+    }
+
+    Rectangle {
+        border-radius: AppTheme.shape-large;
+        background: touch.pressed ? AppTheme.surface-container-high : AppTheme.surface-container;
+
+        animate background { duration: AppTheme.motion-short2; }
+
+        VerticalLayout {
+            padding: 16px;
+            spacing: 8px;
+            alignment: center;
+
+            ContactAvatar {
+                letter: root.contact.avatar-letter;
+                bg-color: root.contact.avatar-color;
+                size: 48px;
+                x: (parent.width - self.width) / 2;
+            }
+
+            Text {
+                text: root.contact.first-name + " " + root.contact.last-name;
+                font-size: AppTheme.type-body-medium / 1px * 1px;
+                font-weight: 500;
+                color: AppTheme.on-surface;
+                horizontal-alignment: center;
+                overflow: elide;
+            }
+        }
+    }
+}

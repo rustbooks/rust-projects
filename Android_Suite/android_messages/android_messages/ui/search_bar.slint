@@ -1,0 +1,77 @@
+// ui/search_bar.slint
+// Animated search bar that slides in from the top.
+// Supports: instant search, clear button, close.
+
+import { Theme } from "app.slint";
+
+export component SearchBar {
+    in-out property <string> query;
+    callback search-changed(string);
+    callback closed();
+
+    height: 56px;
+
+    Rectangle {
+        background: Theme.primary-container;
+
+        HorizontalLayout {
+            padding:   Theme.sp-s;
+            spacing:   Theme.sp-s;
+            alignment: center;
+
+            // Close / back button
+            TouchArea {
+                width:  40px; height: 40px;
+                mouse-cursor: pointer;
+                clicked => { root.closed(); }
+
+                Text {
+                    text:      "←";
+                    font-size: 20px;
+                    color:     Theme.on-primary-container;
+                    vertical-alignment:   center;
+                    horizontal-alignment: center;
+                }
+            }
+
+            // Search input
+            Rectangle {
+                border-radius: Theme.radius-xl;
+                background:    Theme.surface;
+
+                TextInput {
+                    text:             <=> query;
+                    font-size:        Theme.type-body-lg;
+                    color:            Theme.on-surface;
+                    padding-left:     Theme.sp-m;
+                    padding-right:    Theme.sp-m;
+                    placeholder-text: "Search conversations…";
+                    placeholder-color: Theme.on-surface-variant;
+
+                    edited(txt) => {
+                        query = txt;
+                        root.search-changed(txt);
+                    }
+                }
+            }
+
+            // Clear button
+            if query != "": TouchArea {
+                width:  40px; height: 40px;
+                mouse-cursor: pointer;
+                clicked => {
+                    query = "";
+                    root.search-changed("");
+                }
+
+                Text {
+                    text:      "✕";
+                    font-size: 18px;
+                    color:     Theme.on-primary-container;
+                    vertical-alignment:   center;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,255 @@
+// ui/components/add_alarm_dialog.slint
+// ============================================================================
+// Add Alarm Dialog — Material 3 bottom sheet style modal
+// ============================================================================
+
+import { MaterialTheme } from "../app.slint";
+
+component TimeWheel {
+    in property <int> value: 0;
+    in property <int> max-val: 59;
+    in property <string> label: "";
+    callback changed(int);
+
+    width: 80px;
+    height: 200px;
+
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        background: MaterialTheme.surface-variant;
+        border-radius: 12px;
+        clip: true;
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 4px;
+
+            // Up arrow
+            Rectangle {
+                height: 40px;
+                background: MaterialTheme.primary-container;
+                border-radius: 8px;
+
+                Text {
+                    text: "▲";
+                    font-size: 16px;
+                    color: MaterialTheme.on-primary-container;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+
+                TouchArea {
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.changed((root.value + 1) % (root.max-val + 1));
+                    }
+                }
+            }
+
+            // Display value
+            Text {
+                text: root.value < 10 ? "0" + root.value : root.value;
+                font-size: 44px;
+                font-weight: 300;
+                color: MaterialTheme.on-surface;
+                horizontal-alignment: center;
+            }
+
+            // Down arrow
+            Rectangle {
+                height: 40px;
+                background: MaterialTheme.primary-container;
+                border-radius: 8px;
+
+                Text {
+                    text: "▼";
+                    font-size: 16px;
+                    color: MaterialTheme.on-primary-container;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+
+                TouchArea {
+                    mouse-cursor: pointer;
+                    clicked => {
+                        root.changed(root.value == 0 ? root.max-val : root.value - 1);
+                    }
+                }
+            }
+
+            if root.label != "": Text {
+                text: root.label;
+                font-size: MaterialTheme.label-medium;
+                color: MaterialTheme.on-surface-variant;
+                horizontal-alignment: center;
+                letter-spacing: 1px;
+            }
+        }
+    }
+}
+
+export component AddAlarmDialog {
+    callback confirmed(int, int, string);  // hour, minute, label
+    callback cancelled();
+
+    property <int> sel-hour: 7;
+    property <int> sel-minute: 30;
+    property <string> alarm-label: "";
+
+    // Semi-transparent backdrop
+    Rectangle {
+        width: parent.width;
+        height: parent.height;
+        background: #00000080;
+
+        TouchArea {
+            clicked => { root.cancelled(); }
+        }
+    }
+
+    // Bottom sheet
+    Rectangle {
+        x: 0;
+        y: parent.height - 460px;
+        width: parent.width;
+        height: 460px;
+        background: MaterialTheme.surface-3;
+        border-radius: 28px;
+        // Only top corners rounded (Material 3 bottom sheet style)
+        clip: false;
+
+        VerticalLayout {
+            padding: 24px;
+            spacing: 20px;
+
+            // Handle indicator
+            Rectangle {
+                x: (parent.width - 40px) / 2;
+                width: 40px;
+                height: 4px;
+                border-radius: 2px;
+                background: MaterialTheme.outline-variant;
+            }
+
+            // Title
+            Text {
+                text: "Add Alarm";
+                font-size: MaterialTheme.headline-medium;
+                font-weight: 600;
+                color: MaterialTheme.on-surface;
+                horizontal-alignment: center;
+            }
+
+            // Time picker
+            HorizontalLayout {
+                alignment: center;
+                spacing: 12px;
+
+                TimeWheel {
+                    value: root.sel-hour;
+                    max-val: 23;
+                    label: "HOUR";
+                    changed(v) => { root.sel-hour = v; }
+                }
+
+                Text {
+                    text: ":";
+                    font-size: 44px;
+                    font-weight: 300;
+                    color: MaterialTheme.on-surface;
+                    vertical-alignment: center;
+                }
+
+                TimeWheel {
+                    value: root.sel-minute;
+                    max-val: 59;
+                    label: "MIN";
+                    changed(v) => { root.sel-minute = v; }
+                }
+            }
+
+            // Label input (simplified — full impl would use TextInput)
+            Rectangle {
+                height: 56px;
+                border-radius: 12px;
+                background: MaterialTheme.surface-variant;
+
+                HorizontalLayout {
+                    padding-left: 16px;
+                    alignment: start;
+
+                    Text {
+                        text: "Label: " + (root.alarm-label == "" ? "Wake Up" : root.alarm-label);
+                        font-size: MaterialTheme.body-large;
+                        color: root.alarm-label == ""
+                            ? MaterialTheme.on-surface-variant
+                            : MaterialTheme.on-surface;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            // Action buttons
+            HorizontalLayout {
+                spacing: 12px;
+                alignment: space-between;
+
+                // Cancel button
+                Rectangle {
+                    height: 48px;
+                    min-width: 120px;
+                    border-radius: 24px;
+                    border-width: 1px;
+                    border-color: MaterialTheme.outline;
+
+                    Text {
+                        text: "Cancel";
+                        font-size: MaterialTheme.label-large;
+                        font-weight: 600;
+                        color: MaterialTheme.primary;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                        padding-left: 24px;
+                        padding-right: 24px;
+                    }
+
+                    TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => { root.cancelled(); }
+                    }
+                }
+
+                // Save button
+                Rectangle {
+                    height: 48px;
+                    min-width: 120px;
+                    border-radius: 24px;
+                    background: MaterialTheme.primary;
+
+                    Text {
+                        text: "Save Alarm";
+                        font-size: MaterialTheme.label-large;
+                        font-weight: 600;
+                        color: MaterialTheme.on-primary;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                        padding-left: 24px;
+                        padding-right: 24px;
+                    }
+
+                    TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => {
+                            root.confirmed(
+                                root.sel-hour,
+                                root.sel-minute,
+                                root.alarm-label == "" ? "Wake Up" : root.alarm-label
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

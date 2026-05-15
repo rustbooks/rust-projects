@@ -1,0 +1,11 @@
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/derive_more-4a169a15e7bcaa11.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/add.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/ops.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/as_dyn_error.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/../README.md
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libderive_more-4a169a15e7bcaa11.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/add.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/ops.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/as_dyn_error.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/../README.md
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libderive_more-4a169a15e7bcaa11.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/add.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/ops.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/as_dyn_error.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/../README.md
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/add.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/ops.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/as_dyn_error.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/derive_more-2.1.1/src/../README.md:

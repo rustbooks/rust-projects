@@ -1,0 +1,3 @@
+// android/settings.gradle
+rootProject.name = "RustDialer"
+include ':app'

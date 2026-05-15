@@ -1,0 +1,101 @@
+[package]
+name = "android-clock"
+version = "1.0.0"
+edition = "2021"
+authors = ["Android Clock Team"]
+description = "A modern, Material You clock application built with Rust and Slint"
+license = "MIT"
+repository = "https://github.com/your-org/android-clock"
+rust-version = "1.75"
+
+# Optimize for minimal binary size
+[profile.release]
+opt-level = "z"          # Optimize for size
+lto = true               # Link-time optimization removes dead code
+codegen-units = 1        # Single codegen unit for better optimization
+panic = "abort"          # Abort on panic instead of unwinding (smaller binary)
+strip = true             # Strip debug symbols from binary
+overflow-checks = false  # Disable overflow checks in release (faster)
+
+[profile.dev]
+opt-level = 0
+debug = true
+overflow-checks = true   # Keep checks in dev for safety
+
+[dependencies]
+# --- UI Framework ---
+# Slint: Cross-platform native UI toolkit. Compiles to native code.
+# No runtime overhead, no embedded browser. Perfect for minimal footprint.
+slint = { version = "1.7", features = ["backend-winit", "renderer-femtovg"] }
+
+# --- Async Runtime ---
+# Tokio: Industry-standard async runtime. We use minimal features only.
+tokio = { version = "1", features = ["rt", "time", "sync", "macros"] }
+
+# --- Date/Time ---
+# chrono: Comprehensive date/time library, zero unsafe code.
+chrono = { version = "0.4", features = ["serde"] }
+# chrono-tz: Timezone database for World Clock feature.
+chrono-tz = "0.9"
+
+# --- Serialization ---
+# serde + serde_json: Industry standard. Used for alarm/timer persistence.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# --- Storage ---
+# directories: Cross-platform user data directories (no hardcoded paths).
+directories = "5"
+
+# --- Error Handling ---
+# thiserror: Ergonomic error types. Generates Display/Error impls automatically.
+thiserror = "1"
+# anyhow: Flexible error propagation for application-level code.
+anyhow = "1"
+
+# --- Logging ---
+# log + env_logger: Lightweight logging. In release builds, logs compile out.
+log = "0.4"
+env_logger = "0.11"
+
+# --- UUID ---
+# uuid: For generating unique IDs for alarms, timers.
+uuid = { version = "1", features = ["v4"] }
+
+# --- Rodio: Audio playback for alarm sounds (cross-platform) ---
+rodio = { version = "0.17", default-features = false, features = ["mp3", "wav"] }
+
+[build-dependencies]
+# slint-build: Compiles .slint UI files at build time (no runtime overhead).
+slint-build = "1.7"
+
+# Target-specific: On Android, use android_logger instead of env_logger.
+[target.'cfg(target_os = "android")'.dependencies]
+android_logger = "0.13"
+ndk-glue = { version = "0.7", features = ["logger"] }
+
+[[bin]]
+name = "android-clock"
+path = "src/main.rs"
+
+[package.metadata.android]
+# Android-specific metadata for cargo-apk / xbuild
+package = "dev.slint.androidclock"
+label = "Clock"
+min_sdk_version = 26      # Android 8.0+ (Oreo) - covers 95%+ of active devices
+target_sdk_version = 34   # Android 14 (latest stable)
+version_code = 1
+version_name = "1.0.0"
+
+[package.metadata.android.application]
+icon = "@mipmap/ic_launcher"
+theme = "@style/Theme.MaterialDynamic"
+
+[[package.metadata.android.uses-permission]]
+name = "android.permission.VIBRATE"
+
+[[package.metadata.android.uses-permission]]
+name = "android.permission.SCHEDULE_EXACT_ALARM"
+
+[[package.metadata.android.uses-permission]]
+name = "android.permission.POST_NOTIFICATIONS"

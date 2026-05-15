@@ -1,0 +1,901 @@
+// ============================================================
+// app.slint  –  Material You Calculator  (Slint 1.7+)
+// Tabs: Basic | Scientific | History | Converter
+// ============================================================
+
+// ── Colour tokens (Material You – Tonal Palette) ────────────
+global Palette {
+    // Primary
+    out property <color> primary:           #6750A4;
+    out property <color> on-primary:        #FFFFFF;
+    out property <color> primary-container: #EADDFF;
+    out property <color> on-primary-container: #21005D;
+
+    // Secondary
+    out property <color> secondary:            #625B71;
+    out property <color> on-secondary:         #FFFFFF;
+    out property <color> secondary-container:  #E8DEF8;
+    out property <color> on-secondary-container: #1D192B;
+
+    // Tertiary
+    out property <color> tertiary:             #7D5260;
+    out property <color> on-tertiary:          #FFFFFF;
+    out property <color> tertiary-container:   #FFD8E4;
+
+    // Surface / Background
+    out property <color> surface:              #FFFBFE;
+    out property <color> surface-variant:      #E7E0EC;
+    out property <color> on-surface:           #1C1B1F;
+    out property <color> on-surface-variant:   #49454F;
+    out property <color> outline:              #79747E;
+    out property <color> outline-variant:      #CAC4D0;
+
+    // Error
+    out property <color> error:                #B3261E;
+    out property <color> error-container:      #F9DEDC;
+    out property <color> on-error:             #FFFFFF;
+
+    // Scrim / Shadow
+    out property <color> scrim:                #000000;
+
+    // Numeric display tint
+    out property <color> display-bg:           #F3EFF4;
+}
+
+// ── Typography scale ─────────────────────────────────────────
+global Typography {
+    out property <length>  display-large:   57px;
+    out property <length>  display-medium:  45px;
+    out property <length>  display-small:   36px;
+    out property <length>  headline-large:  32px;
+    out property <length>  headline-medium: 28px;
+    out property <length>  headline-small:  24px;
+    out property <length>  title-large:     22px;
+    out property <length>  title-medium:    16px;
+    out property <length>  title-small:     14px;
+    out property <length>  body-large:      16px;
+    out property <length>  body-medium:     14px;
+    out property <length>  body-small:      12px;
+    out property <length>  label-large:     14px;
+    out property <length>  label-medium:    12px;
+    out property <length>  label-small:     11px;
+}
+
+// ── Shared structs ────────────────────────────────────────────
+struct HistoryEntry {
+    expression: string,
+    result: string,
+    timestamp: string,
+}
+
+struct ConversionCategory {
+    name: string,
+    unit-from: string,
+    unit-to: string,
+    result: string,
+}
+
+// ── Ripple / press animation helper ──────────────────────────
+component RippleSurface inherits Rectangle {
+    in property <color>  base-color: Palette.surface-variant;
+    in property <color>  ripple-color: Palette.primary;
+    in property <bool>   enabled: true;
+
+    callback clicked;
+
+    property <float> ripple-alpha: 0.0;
+    property <bool>  is-pressed: false;
+
+    background: base-color;
+    border-radius: 16px;
+
+    animate background { duration: 120ms; easing: ease; }
+
+    touch := TouchArea {
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+        pointer-event(ev) => {
+            if ev.kind == PointerEventKind.down {
+                root.is-pressed = true;
+                root.ripple-alpha = 0.22;
+            } else if ev.kind == PointerEventKind.up || ev.kind == PointerEventKind.cancel {
+                root.is-pressed = false;
+                root.ripple-alpha = 0.0;
+            }
+        }
+    }
+
+    // Ripple overlay
+    Rectangle {
+        width: 100%; height: 100%;
+        border-radius: parent.border-radius;
+        background: ripple-color.with-alpha(root.ripple-alpha);
+        animate background { duration: 180ms; easing: ease-out; }
+    }
+}
+
+// ── Elevated Button (Material You) ───────────────────────────
+component M3Button inherits Rectangle {
+    in property <string> text: "Button";
+    in property <color>  btn-color: Palette.primary;
+    in property <color>  text-color: Palette.on-primary;
+    in property <length> font-size: Typography.label-large;
+    in property <bool>   enabled: true;
+
+    callback clicked;
+
+    height: 56px;
+    border-radius: 16px;
+    background: btn-color;
+    drop-shadow-color: Palette.scrim.with-alpha(0.25);
+    drop-shadow-blur: 4px;
+    drop-shadow-offset-y: 2px;
+    clip: true;
+
+    animate background { duration: 150ms; }
+
+    touch := TouchArea {
+        enabled: root.enabled;
+        clicked => { root.clicked(); }
+    }
+
+    overlay := Rectangle {
+        width: 100%; height: 100%;
+        background: white.with-alpha(touch.pressed ? 0.18 : (touch.has-hover ? 0.08 : 0.0));
+        animate background { duration: 120ms; }
+    }
+
+    Text {
+        text: root.text;
+        color: root.text-color;
+        font-size: root.font-size;
+        font-weight: 600;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+// ── Calculator Button (specialised) ──────────────────────────
+component CalcButton inherits Rectangle {
+    in property <string> label: "0";
+    in property <string> sublabel: "";       // e.g. second function
+    in property <color>  btn-color: Palette.surface-variant;
+    in property <color>  label-color: Palette.on-surface;
+    in property <length> label-size: Typography.title-large;
+    in property <bool>   wide: false;        // span 2 cols
+
+    callback clicked;
+
+    height: 64px;
+    border-radius: 20px;
+    background: btn-color;
+    clip: true;
+    drop-shadow-color: Palette.scrim.with-alpha(0.12);
+    drop-shadow-blur: 2px;
+    drop-shadow-offset-y: 1px;
+
+    animate background { duration: 100ms; }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    overlay := Rectangle {
+        width: 100%; height: 100%;
+        background: white.with-alpha(touch.pressed ? 0.22 : (touch.has-hover ? 0.10 : 0.0));
+        animate background { duration: 100ms; }
+    }
+
+    VerticalLayout {
+        alignment: center;
+        spacing: 2px;
+        Text {
+            text: root.label;
+            color: root.label-color;
+            font-size: root.label-size;
+            font-weight: 500;
+            horizontal-alignment: center;
+        }
+        if root.sublabel != "" : Text {
+            text: root.sublabel;
+            color: root.label-color.with-alpha(0.65);
+            font-size: Typography.label-small;
+            horizontal-alignment: center;
+        }
+    }
+}
+
+// ── Navigation Tab Bar ────────────────────────────────────────
+component TabBar inherits Rectangle {
+    in-out property <int> current-tab: 0;
+
+    height: 56px;
+    background: Palette.surface;
+    drop-shadow-color: Palette.scrim.with-alpha(0.10);
+    drop-shadow-blur: 4px;
+    drop-shadow-offset-y: -2px;
+
+    HorizontalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        for tab-info[i] in [
+            {label: "Basic",      icon: "⌨"},
+            {label: "Scientific", icon: "∫"},
+            {label: "History",    icon: "🕐"},
+            {label: "Converter",  icon: "⇌"},
+        ] : Rectangle {
+            width: parent.width / 4;
+            background: transparent;
+
+            touch := TouchArea {
+                clicked => { root.current-tab = i; }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 2px;
+                padding-top: 6px;
+                padding-bottom: 6px;
+
+                Text {
+                    text: tab-info.icon;
+                    font-size: 20px;
+                    color: root.current-tab == i ? Palette.primary : Palette.on-surface-variant;
+                    horizontal-alignment: center;
+                    animate color { duration: 150ms; }
+                }
+                Text {
+                    text: tab-info.label;
+                    font-size: Typography.label-medium;
+                    color: root.current-tab == i ? Palette.primary : Palette.on-surface-variant;
+                    horizontal-alignment: center;
+                    animate color { duration: 150ms; }
+                }
+
+                // Active indicator pill
+                Rectangle {
+                    height: 3px;
+                    width: root.current-tab == i ? 32px : 0px;
+                    border-radius: 2px;
+                    background: Palette.primary;
+                    x: (parent.width - self.width) / 2;
+                    animate width { duration: 200ms; easing: ease-in-out; }
+                }
+            }
+        }
+    }
+}
+
+// ── Display Area ──────────────────────────────────────────────
+component DisplayArea inherits Rectangle {
+    in property <string> expression: "";
+    in property <string> result: "0";
+    in property <bool>   has-error: false;
+
+    background: Palette.display-bg;
+    border-radius: 28px;
+    padding: 20px;
+    drop-shadow-color: Palette.scrim.with-alpha(0.08);
+    drop-shadow-blur: 8px;
+    drop-shadow-offset-y: 2px;
+
+    VerticalLayout {
+        alignment: end;
+        spacing: 4px;
+        padding: 20px;
+
+        // Expression line
+        Text {
+            text: root.expression;
+            color: Palette.on-surface-variant;
+            font-size: Typography.title-large;
+            horizontal-alignment: right;
+            overflow: elide;
+            wrap: no-wrap;
+        }
+
+        // Result line (large)
+        Text {
+            text: root.result;
+            color: root.has-error ? Palette.error : Palette.on-surface;
+            font-size: root.result.character-count > 10 ? Typography.display-small : Typography.display-medium;
+            font-weight: 300;
+            horizontal-alignment: right;
+            overflow: elide;
+            wrap: no-wrap;
+            animate font-size { duration: 120ms; easing: ease; }
+        }
+    }
+}
+
+// ── Basic Calculator Tab ──────────────────────────────────────
+component BasicTab inherits VerticalLayout {
+    in property <string> display-expr: "";
+    in property <string> display-result: "0";
+    in property <bool>   display-error: false;
+
+    callback button-pressed(string);
+
+    spacing: 8px;
+    padding: 12px;
+
+    DisplayArea {
+        height: 160px;
+        expression: root.display-expr;
+        result: root.display-result;
+        has-error: root.display-error;
+    }
+
+    // Button grid
+    GridLayout {
+        spacing: 8px;
+        Row {
+            CalcButton { col: 0; label: "C";   btn-color: Palette.tertiary-container; label-color: Palette.tertiary; clicked => { root.button-pressed("C"); } }
+            CalcButton { col: 1; label: "±";   btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.button-pressed("±"); } }
+            CalcButton { col: 2; label: "%";   btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.button-pressed("%"); } }
+            CalcButton { col: 3; label: "÷";   btn-color: Palette.primary-container; label-color: Palette.primary; label-size: Typography.headline-small; clicked => { root.button-pressed("÷"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "7"; clicked => { root.button-pressed("7"); } }
+            CalcButton { col: 1; label: "8"; clicked => { root.button-pressed("8"); } }
+            CalcButton { col: 2; label: "9"; clicked => { root.button-pressed("9"); } }
+            CalcButton { col: 3; label: "×"; btn-color: Palette.primary-container; label-color: Palette.primary; label-size: Typography.headline-small; clicked => { root.button-pressed("×"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "4"; clicked => { root.button-pressed("4"); } }
+            CalcButton { col: 1; label: "5"; clicked => { root.button-pressed("5"); } }
+            CalcButton { col: 2; label: "6"; clicked => { root.button-pressed("6"); } }
+            CalcButton { col: 3; label: "−"; btn-color: Palette.primary-container; label-color: Palette.primary; label-size: Typography.headline-small; clicked => { root.button-pressed("−"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "1"; clicked => { root.button-pressed("1"); } }
+            CalcButton { col: 1; label: "2"; clicked => { root.button-pressed("2"); } }
+            CalcButton { col: 2; label: "3"; clicked => { root.button-pressed("3"); } }
+            CalcButton { col: 3; label: "+"; btn-color: Palette.primary-container; label-color: Palette.primary; label-size: Typography.headline-small; clicked => { root.button-pressed("+"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "⌫"; btn-color: Palette.error-container; label-color: Palette.error; clicked => { root.button-pressed("⌫"); } }
+            CalcButton { col: 1; label: "0"; clicked => { root.button-pressed("0"); } }
+            CalcButton { col: 2; label: "."; clicked => { root.button-pressed("."); } }
+            CalcButton { col: 3; label: "="; btn-color: Palette.primary; label-color: Palette.on-primary; label-size: Typography.headline-small; clicked => { root.button-pressed("="); } }
+        }
+    }
+}
+
+// ── Scientific Calculator Tab ─────────────────────────────────
+component ScientificTab inherits VerticalLayout {
+    in property <string> display-expr: "";
+    in property <string> display-result: "0";
+    in property <bool>   display-error: false;
+    in property <bool>   is-deg: true;  // deg vs rad
+
+    callback button-pressed(string);
+    callback toggle-deg-rad();
+
+    spacing: 8px;
+    padding: 12px;
+
+    DisplayArea {
+        height: 140px;
+        expression: root.display-expr;
+        result: root.display-result;
+        has-error: root.display-error;
+    }
+
+    // Deg / Rad toggle
+    HorizontalLayout {
+        alignment: end;
+        padding-right: 4px;
+        Rectangle {
+            width: 88px; height: 32px;
+            border-radius: 16px;
+            background: Palette.secondary-container;
+            touch := TouchArea { clicked => { root.toggle-deg-rad(); } }
+            Text {
+                text: root.is-deg ? "DEG" : "RAD";
+                color: Palette.on-secondary-container;
+                font-size: Typography.label-medium;
+                font-weight: 700;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+
+    // Sci functions grid (5 cols × 4 rows + numeric)
+    GridLayout {
+        spacing: 6px;
+        Row {
+            CalcButton { col: 0; label: "sin";  sublabel: "asin"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("sin"); } }
+            CalcButton { col: 1; label: "cos";  sublabel: "acos"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("cos"); } }
+            CalcButton { col: 2; label: "tan";  sublabel: "atan"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("tan"); } }
+            CalcButton { col: 3; label: "log";  sublabel: "10ˣ"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("log"); } }
+            CalcButton { col: 4; label: "ln";   sublabel: "eˣ";  btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("ln"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "x²"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("x²"); } }
+            CalcButton { col: 1; label: "xʸ"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("xʸ"); } }
+            CalcButton { col: 2; label: "√x"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("√x"); } }
+            CalcButton { col: 3; label: "∛x"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("∛x"); } }
+            CalcButton { col: 4; label: "1/x"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; label-size: Typography.body-large; clicked => { root.button-pressed("1/x"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "π";  btn-color: Palette.tertiary-container; label-color: Palette.tertiary; clicked => { root.button-pressed("π"); } }
+            CalcButton { col: 1; label: "e";  btn-color: Palette.tertiary-container; label-color: Palette.tertiary; clicked => { root.button-pressed("e"); } }
+            CalcButton { col: 2; label: "(";  btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.button-pressed("("); } }
+            CalcButton { col: 3; label: ")";  btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.button-pressed(")"); } }
+            CalcButton { col: 4; label: "!";  btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.button-pressed("!"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "C";  btn-color: Palette.tertiary-container; label-color: Palette.tertiary; clicked => { root.button-pressed("C"); } }
+            CalcButton { col: 1; label: "7"; clicked => { root.button-pressed("7"); } }
+            CalcButton { col: 2; label: "8"; clicked => { root.button-pressed("8"); } }
+            CalcButton { col: 3; label: "9"; clicked => { root.button-pressed("9"); } }
+            CalcButton { col: 4; label: "÷"; btn-color: Palette.primary-container; label-color: Palette.primary; clicked => { root.button-pressed("÷"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "%"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.button-pressed("%"); } }
+            CalcButton { col: 1; label: "4"; clicked => { root.button-pressed("4"); } }
+            CalcButton { col: 2; label: "5"; clicked => { root.button-pressed("5"); } }
+            CalcButton { col: 3; label: "6"; clicked => { root.button-pressed("6"); } }
+            CalcButton { col: 4; label: "×"; btn-color: Palette.primary-container; label-color: Palette.primary; clicked => { root.button-pressed("×"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "±"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.button-pressed("±"); } }
+            CalcButton { col: 1; label: "1"; clicked => { root.button-pressed("1"); } }
+            CalcButton { col: 2; label: "2"; clicked => { root.button-pressed("2"); } }
+            CalcButton { col: 3; label: "3"; clicked => { root.button-pressed("3"); } }
+            CalcButton { col: 4; label: "−"; btn-color: Palette.primary-container; label-color: Palette.primary; clicked => { root.button-pressed("−"); } }
+        }
+        Row {
+            CalcButton { col: 0; label: "⌫"; btn-color: Palette.error-container; label-color: Palette.error; clicked => { root.button-pressed("⌫"); } }
+            CalcButton { col: 1; label: "0"; clicked => { root.button-pressed("0"); } }
+            CalcButton { col: 2; label: "."; clicked => { root.button-pressed("."); } }
+            CalcButton { col: 3; label: "="; btn-color: Palette.primary; label-color: Palette.on-primary; clicked => { root.button-pressed("="); } }
+            CalcButton { col: 4; label: "+"; btn-color: Palette.primary-container; label-color: Palette.primary; clicked => { root.button-pressed("+"); } }
+        }
+    }
+}
+
+// ── History Card ──────────────────────────────────────────────
+component HistoryCard inherits Rectangle {
+    in property <string> expression: "";
+    in property <string> result: "";
+    in property <string> timestamp: "";
+
+    callback recall();
+    callback delete-entry();
+
+    height: 80px;
+    background: Palette.surface;
+    border-radius: 16px;
+    clip: true;
+    drop-shadow-color: Palette.scrim.with-alpha(0.08);
+    drop-shadow-blur: 4px;
+    drop-shadow-offset-y: 2px;
+
+    touch := TouchArea {
+        clicked => { root.recall(); }
+    }
+
+    overlay := Rectangle {
+        width: 100%; height: 100%;
+        background: Palette.primary.with-alpha(touch.pressed ? 0.12 : (touch.has-hover ? 0.06 : 0.0));
+        animate background { duration: 120ms; }
+    }
+
+    HorizontalLayout {
+        padding: 16px;
+        spacing: 12px;
+
+        VerticalLayout {
+            alignment: center;
+            horizontal-stretch: 1;
+            spacing: 4px;
+
+            Text {
+                text: root.expression;
+                color: Palette.on-surface-variant;
+                font-size: Typography.body-medium;
+                overflow: elide;
+            }
+            Text {
+                text: root.result;
+                color: Palette.on-surface;
+                font-size: Typography.title-large;
+                font-weight: 600;
+                overflow: elide;
+            }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            spacing: 6px;
+
+            Text {
+                text: root.timestamp;
+                color: Palette.on-surface-variant;
+                font-size: Typography.label-small;
+                horizontal-alignment: right;
+            }
+
+            // Delete button
+            del-touch := TouchArea {
+                width: 36px; height: 36px;
+                clicked => { root.delete-entry(); }
+            }
+            Rectangle {
+                width: 36px; height: 36px;
+                border-radius: 18px;
+                background: del-touch.pressed ? Palette.error-container : (del-touch.has-hover ? Palette.error.with-alpha(0.12) : transparent);
+                animate background { duration: 100ms; }
+                Text {
+                    text: "🗑";
+                    font-size: 16px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+// ── History Tab ───────────────────────────────────────────────
+component HistoryTab inherits VerticalLayout {
+    in property <[HistoryEntry]> entries: [];
+
+    callback recall-entry(int);
+    callback delete-entry(int);
+    callback clear-all();
+
+    spacing: 0px;
+    padding: 0px;
+
+    // Header
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-top: 16px;
+        padding-bottom: 8px;
+        alignment: space-between;
+
+        Text {
+            text: "Calculation History";
+            font-size: Typography.headline-small;
+            font-weight: 600;
+            color: Palette.on-surface;
+            vertical-alignment: center;
+        }
+
+        if root.entries.length > 0 : M3Button {
+            text: "Clear All";
+            width: 100px;
+            height: 36px;
+            btn-color: Palette.error-container;
+            text-color: Palette.error;
+            font-size: Typography.label-medium;
+            clicked => { root.clear-all(); }
+        }
+    }
+
+    if root.entries.length == 0 : VerticalLayout {
+        alignment: center;
+        vertical-stretch: 1;
+        spacing: 16px;
+
+        Text {
+            text: "🕐";
+            font-size: 64px;
+            horizontal-alignment: center;
+            color: Palette.on-surface-variant;
+        }
+        Text {
+            text: "No calculations yet";
+            font-size: Typography.title-medium;
+            color: Palette.on-surface-variant;
+            horizontal-alignment: center;
+        }
+        Text {
+            text: "Your calculation history will appear here";
+            font-size: Typography.body-medium;
+            color: Palette.outline;
+            horizontal-alignment: center;
+        }
+    }
+
+    // Scrollable list
+    if root.entries.length > 0 : ScrollView {
+        vertical-stretch: 1;
+        VerticalLayout {
+            padding: 12px;
+            spacing: 8px;
+            for entry[i] in root.entries : HistoryCard {
+                expression: entry.expression;
+                result: entry.result;
+                timestamp: entry.timestamp;
+                recall => { root.recall-entry(i); }
+                delete-entry => { root.delete-entry(i); }
+            }
+        }
+    }
+}
+
+// ── Converter Tab ─────────────────────────────────────────────
+component ConverterTab inherits VerticalLayout {
+    in-out property <string> input-value: "0";
+    in property <string>     from-unit: "Meters";
+    in property <string>     to-unit: "Feet";
+    in property <string>     result-value: "0";
+    in property <string>     category: "Length";
+
+    callback convert-value(string);
+    callback swap-units();
+    callback set-category(string);
+
+    spacing: 0px;
+
+    // Category chips
+    ScrollView {
+        height: 52px;
+        HorizontalLayout {
+            padding: 8px;
+            spacing: 8px;
+
+            for cat in ["Length", "Weight", "Temperature", "Area", "Volume", "Speed", "Time", "Data", "Energy", "Pressure"] :
+            Rectangle {
+                width: cat.character-count * 9px + 24px;
+                height: 36px;
+                border-radius: 18px;
+                background: root.category == cat ? Palette.secondary-container : Palette.surface-variant;
+                border-width: 1px;
+                border-color: root.category == cat ? Palette.secondary : Palette.outline-variant;
+                animate background { duration: 150ms; }
+
+                touch := TouchArea {
+                    clicked => { root.set-category(cat); }
+                }
+                Text {
+                    text: cat;
+                    color: root.category == cat ? Palette.on-secondary-container : Palette.on-surface-variant;
+                    font-size: Typography.label-medium;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    animate color { duration: 150ms; }
+                }
+            }
+        }
+    }
+
+    VerticalLayout {
+        padding: 16px;
+        spacing: 16px;
+
+        // From field
+        Rectangle {
+            height: 80px;
+            background: Palette.surface-variant;
+            border-radius: 16px;
+            HorizontalLayout {
+                padding: 16px;
+                spacing: 12px;
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: center;
+                    Text {
+                        text: root.from-unit;
+                        color: Palette.on-surface-variant;
+                        font-size: Typography.label-medium;
+                    }
+                    Text {
+                        text: root.input-value;
+                        color: Palette.on-surface;
+                        font-size: Typography.headline-medium;
+                        font-weight: 500;
+                    }
+                }
+            }
+        }
+
+        // Swap button
+        HorizontalLayout {
+            alignment: center;
+            Rectangle {
+                width: 48px; height: 48px;
+                border-radius: 24px;
+                background: Palette.primary-container;
+                drop-shadow-color: Palette.scrim.with-alpha(0.15);
+                drop-shadow-blur: 4px;
+                drop-shadow-offset-y: 2px;
+
+                sw := TouchArea { clicked => { root.swap-units(); } }
+                overlay := Rectangle {
+                    width: 100%; height: 100%;
+                    border-radius: 24px;
+                    background: Palette.primary.with-alpha(sw.pressed ? 0.2 : 0.0);
+                    animate background { duration: 100ms; }
+                }
+                Text {
+                    text: "⇅";
+                    font-size: 24px;
+                    color: Palette.on-primary-container;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        // To field
+        Rectangle {
+            height: 80px;
+            background: Palette.primary-container;
+            border-radius: 16px;
+            HorizontalLayout {
+                padding: 16px;
+                spacing: 12px;
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    alignment: center;
+                    Text {
+                        text: root.to-unit;
+                        color: Palette.on-primary-container.with-alpha(0.7);
+                        font-size: Typography.label-medium;
+                    }
+                    Text {
+                        text: root.result-value;
+                        color: Palette.on-primary-container;
+                        font-size: Typography.headline-medium;
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+
+        // Numpad for converter
+        GridLayout {
+            spacing: 8px;
+            Row {
+                CalcButton { col:0; label:"7"; btn-color: Palette.surface-variant; clicked => { root.convert-value("7"); } }
+                CalcButton { col:1; label:"8"; btn-color: Palette.surface-variant; clicked => { root.convert-value("8"); } }
+                CalcButton { col:2; label:"9"; btn-color: Palette.surface-variant; clicked => { root.convert-value("9"); } }
+                CalcButton { col:3; label:"⌫"; btn-color: Palette.error-container; label-color: Palette.error; clicked => { root.convert-value("⌫"); } }
+            }
+            Row {
+                CalcButton { col:0; label:"4"; btn-color: Palette.surface-variant; clicked => { root.convert-value("4"); } }
+                CalcButton { col:1; label:"5"; btn-color: Palette.surface-variant; clicked => { root.convert-value("5"); } }
+                CalcButton { col:2; label:"6"; btn-color: Palette.surface-variant; clicked => { root.convert-value("6"); } }
+                CalcButton { col:3; label:"C";  btn-color: Palette.tertiary-container; label-color: Palette.tertiary; clicked => { root.convert-value("C"); } }
+            }
+            Row {
+                CalcButton { col:0; label:"1"; btn-color: Palette.surface-variant; clicked => { root.convert-value("1"); } }
+                CalcButton { col:1; label:"2"; btn-color: Palette.surface-variant; clicked => { root.convert-value("2"); } }
+                CalcButton { col:2; label:"3"; btn-color: Palette.surface-variant; clicked => { root.convert-value("3"); } }
+                CalcButton { col:3; label: "±"; btn-color: Palette.secondary-container; label-color: Palette.on-secondary-container; clicked => { root.convert-value("±"); } }
+            }
+            Row {
+                CalcButton { col:0; colspan:2; label:"0"; btn-color: Palette.surface-variant; clicked => { root.convert-value("0"); } }
+                CalcButton { col:2; label:"."; btn-color: Palette.surface-variant; clicked => { root.convert-value("."); } }
+                CalcButton { col:3; label:"="; btn-color: Palette.primary; label-color: Palette.on-primary; clicked => { root.convert-value("="); } }
+            }
+        }
+    }
+}
+
+// ── App Shell (Top-level) ─────────────────────────────────────
+export component AppWindow inherits Window {
+    title: "Calculator";
+    preferred-width: 400px;
+    preferred-height: 780px;
+    min-width: 320px;
+    background: Palette.surface;
+
+    // ── Exported properties (Rust ↔ Slint bridge) ───────────
+    in-out property <int>   active-tab: 0;
+
+    // Basic / Scientific shared
+    in-out property <string> display-expr: "";
+    in-out property <string> display-result: "0";
+    in-out property <bool>   display-error: false;
+    in-out property <bool>   is-deg: true;
+
+    // History
+    in-out property <[HistoryEntry]> history-entries: [];
+
+    // Converter
+    in-out property <string> conv-input: "0";
+    in-out property <string> conv-from: "Meters";
+    in-out property <string> conv-to: "Feet";
+    in-out property <string> conv-result: "0";
+    in-out property <string> conv-category: "Length";
+
+    // ── Callbacks ────────────────────────────────────────────
+    callback basic-button-pressed(string);
+    callback sci-button-pressed(string);
+    callback sci-toggle-deg-rad();
+    callback history-recall(int);
+    callback history-delete(int);
+    callback history-clear-all();
+    callback conv-value(string);
+    callback conv-swap();
+    callback conv-category-changed(string);
+
+    // ── Layout ───────────────────────────────────────────────
+    VerticalLayout {
+        spacing: 0px;
+        padding: 0px;
+
+        // App bar
+        Rectangle {
+            height: 64px;
+            background: Palette.surface;
+            drop-shadow-color: Palette.scrim.with-alpha(0.08);
+            drop-shadow-blur: 4px;
+            drop-shadow-offset-y: 2px;
+
+            HorizontalLayout {
+                padding-left: 16px;
+                padding-right: 16px;
+                alignment: center;
+
+                Text {
+                    text: ["Calculator", "Scientific", "History", "Converter"][root.active-tab];
+                    font-size: Typography.title-large;
+                    font-weight: 700;
+                    color: Palette.on-surface;
+                    vertical-alignment: center;
+                    animate color { duration: 200ms; }
+                }
+            }
+        }
+
+        // Tab content
+        Rectangle {
+            vertical-stretch: 1;
+            background: Palette.surface;
+            clip: true;
+
+            if root.active-tab == 0 : BasicTab {
+                width: 100%; height: 100%;
+                display-expr: root.display-expr;
+                display-result: root.display-result;
+                display-error: root.display-error;
+                button-pressed(k) => { root.basic-button-pressed(k); }
+            }
+
+            if root.active-tab == 1 : ScientificTab {
+                width: 100%; height: 100%;
+                display-expr: root.display-expr;
+                display-result: root.display-result;
+                display-error: root.display-error;
+                is-deg: root.is-deg;
+                button-pressed(k) => { root.sci-button-pressed(k); }
+                toggle-deg-rad => { root.sci-toggle-deg-rad(); }
+            }
+
+            if root.active-tab == 2 : HistoryTab {
+                width: 100%; height: 100%;
+                entries: root.history-entries;
+                recall-entry(i) => { root.history-recall(i); }
+                delete-entry(i) => { root.history-delete(i); }
+                clear-all => { root.history-clear-all(); }
+            }
+
+            if root.active-tab == 3 : ConverterTab {
+                width: 100%; height: 100%;
+                input-value: root.conv-input;
+                from-unit: root.conv-from;
+                to-unit: root.conv-to;
+                result-value: root.conv-result;
+                category: root.conv-category;
+                convert-value(v) => { root.conv-value(v); }
+                swap-units => { root.conv-swap(); }
+                set-category(c) => { root.conv-category-changed(c); }
+            }
+        }
+
+        // Bottom navigation
+        TabBar {
+            current-tab <=> root.active-tab;
+        }
+    }
+}

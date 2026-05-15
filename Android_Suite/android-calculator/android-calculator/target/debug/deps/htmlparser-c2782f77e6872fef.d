@@ -1,0 +1,11 @@
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/htmlparser-c2782f77e6872fef.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/error.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/stream.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/strspan.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/xmlchar.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libhtmlparser-c2782f77e6872fef.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/error.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/stream.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/strspan.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/xmlchar.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libhtmlparser-c2782f77e6872fef.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/error.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/stream.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/strspan.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/xmlchar.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/error.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/stream.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/strspan.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/htmlparser-0.2.1/src/xmlchar.rs:

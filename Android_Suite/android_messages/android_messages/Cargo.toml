@@ -1,0 +1,83 @@
+[package]
+name = "android-messages"
+version = "1.0.0"
+edition = "2021"
+authors = ["Android Messages Team"]
+description = "Cross-platform SMS messaging app built with Rust + Slint"
+license = "MIT"
+repository = "https://github.com/your-org/android-messages"
+keywords = ["sms", "messaging", "android", "slint", "rust"]
+categories = ["multimedia"]
+
+# ── Minimal binary profile ──────────────────────────────────────────────────
+[profile.release]
+opt-level     = "z"      # Optimise for size (not speed)
+lto           = true     # Link-time optimisation removes dead code across crates
+codegen-units = 1        # Single codegen unit enables maximum inlining / DCE
+panic         = "abort"  # Removes unwinding machinery (~50 KB saving)
+strip         = true     # Strip debug symbols from final binary
+
+# ── Dev profile stays fast to compile ────────────────────────────────────────
+[profile.dev]
+opt-level = 0
+debug     = true
+
+[dependencies]
+# ── UI framework ─────────────────────────────────────────────────────────────
+# Slint is a declarative, compile-time UI toolkit — zero runtime framework overhead.
+slint = { version = "1.9", features = ["default"] }
+
+# ── Async runtime ────────────────────────────────────────────────────────────
+# tokio drives all I/O, timers, and background tasks without blocking the UI thread.
+tokio = { version = "1", features = ["full"] }
+
+# ── Serialisation ────────────────────────────────────────────────────────────
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# ── Encryption (AES-256-GCM) ─────────────────────────────────────────────────
+# aes-gcm is a pure-Rust AEAD cipher; ring would pull in C, bloating the binary.
+aes-gcm = "0.10"
+# rand is used to generate random nonces; no_std-compatible path via getrandom.
+rand = "0.8"
+
+# ── Persistent storage ───────────────────────────────────────────────────────
+# rusqlite bundles SQLite as a static lib — no runtime dependency, tiny overhead.
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+# ── Time / date handling ──────────────────────────────────────────────────────
+chrono = { version = "0.4", features = ["serde"] }
+
+# ── Logging ──────────────────────────────────────────────────────────────────
+log      = "0.4"
+env_logger = "0.11"
+
+# ── Error handling ────────────────────────────────────────────────────────────
+# thiserror generates Display + Error impls from derive macros — zero runtime cost.
+thiserror = "1"
+anyhow    = "1"
+
+# ── MIME / attachment detection ───────────────────────────────────────────────
+mime_guess = "2"
+
+# ── UUID generation ───────────────────────────────────────────────────────────
+uuid = { version = "1", features = ["v4"] }
+
+# ── Base64 (for image data URIs) ──────────────────────────────────────────────
+base64 = "0.22"
+
+# ── Cross-platform file-picker (desktop only) ─────────────────────────────────
+[target.'cfg(not(target_os = "android"))'.dependencies]
+rfd = "0.14"
+
+[[bin]]
+name    = "android-messages"
+path    = "src/main.rs"
+
+[lib]
+name    = "android_messages"
+path    = "src/lib.rs"
+
+[build-dependencies]
+# slint-build compiles .slint files at build time — no parse overhead at runtime.
+slint-build = "1.9"

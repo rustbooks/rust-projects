@@ -1,0 +1,32 @@
+// ui/components/contact_avatar.slint
+// Circular avatar with initials and color.
+// Falls back to emoji if no photo.
+
+import { AppTheme } from "../themes/theme.slint";
+
+export component ContactAvatar {
+    in property <string> letter: "?";
+    in property <color> bg-color: AppTheme.primary;
+    in property <length> size: 48px;
+
+    width: root.size;
+    height: root.size;
+
+    Rectangle {
+        border-radius: root.size / 2;
+        background: root.bg-color;
+        width: root.size;
+        height: root.size;
+
+        Text {
+            text: root.letter;
+            font-size: root.size * 0.42;
+            font-weight: 600;
+            color: #FFFFFF;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            width: parent.width;
+            height: parent.height;
+        }
+    }
+}

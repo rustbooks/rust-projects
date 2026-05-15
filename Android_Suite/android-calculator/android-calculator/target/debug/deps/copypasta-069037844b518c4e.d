@@ -1,0 +1,11 @@
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/copypasta-069037844b518c4e.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/common.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/wayland_clipboard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/x11_clipboard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/nop_clipboard.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libcopypasta-069037844b518c4e.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/common.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/wayland_clipboard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/x11_clipboard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/nop_clipboard.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libcopypasta-069037844b518c4e.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/common.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/wayland_clipboard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/x11_clipboard.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/nop_clipboard.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/common.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/wayland_clipboard.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/x11_clipboard.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/copypasta-0.10.2/src/nop_clipboard.rs:

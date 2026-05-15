@@ -1,0 +1,292 @@
+// ui/pages/edit_contact_page.slint
+// Full contact edit / create form.
+// All fields support Unicode (Devanagari/Marathi natively via Slint TextInput).
+
+import { AppTheme } from "../themes/theme.slint";
+import { ContactEntry, GroupEntry } from "../main.slint";
+import { ContactAvatar } from "../components/contact_avatar.slint";
+
+export component EditContactPage {
+    in property <ContactEntry> contact;
+    in property <bool> is-new: false;
+    in property <[GroupEntry]> groups: [];
+    callback back-clicked;
+    callback save-clicked(ContactEntry);
+
+    // Local editable copies of all fields
+    property <string> edit-first: root.contact.first-name;
+    property <string> edit-last: root.contact.last-name;
+    property <string> edit-phone: root.contact.phone-primary;
+    property <string> edit-phone2: root.contact.phone-secondary;
+    property <string> edit-email: root.contact.email;
+    property <string> edit-org: root.contact.organization;
+    property <string> edit-title: root.contact.job-title;
+    property <string> edit-website: root.contact.website;
+    property <string> edit-notes: root.contact.notes;
+    property <string> edit-group: root.contact.group;
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        // ── App Bar ───────────────────────────────────────────────────────────
+        Rectangle {
+            height: 64px;
+            background: AppTheme.surface;
+            drop-shadow-blur: 4px;
+            drop-shadow-offset-y: 2px;
+            drop-shadow-color: AppTheme.outline-variant.with-alpha(0.4);
+
+            HorizontalLayout {
+                padding-left: 4px;
+                padding-right: 12px;
+                spacing: 4px;
+
+                back-btn := TouchArea {
+                    width: 48px; height: 48px;
+                    clicked => { root.back-clicked(); }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: back-btn.pressed ? AppTheme.on-surface.with-alpha(0.1) : transparent;
+                        width: 40px; height: 40px; x: 4px; y: 4px;
+
+                        Text {
+                            text: "✕";
+                            font-size: 20px;
+                            color: AppTheme.on-surface;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+
+                Text {
+                    text: root.is-new ? "New Contact" : "Edit Contact";
+                    font-size: AppTheme.type-title-large / 1px * 1px;
+                    font-weight: 600;
+                    color: AppTheme.on-surface;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+
+                // Save button
+                save-btn := TouchArea {
+                    width: 72px; height: 40px;
+                    clicked => {
+                        root.save-clicked({
+                            id: root.contact.id,
+                            first-name: root.edit-first,
+                            last-name: root.edit-last,
+                            phone-primary: root.edit-phone,
+                            phone-secondary: root.edit-phone2,
+                            email: root.edit-email,
+                            organization: root.edit-org,
+                            job-title: root.edit-title,
+                            website: root.edit-website,
+                            notes: root.edit-notes,
+                            group: root.edit-group,
+                            is-favorite: root.contact.is-favorite,
+                            avatar-color: root.contact.avatar-color,
+                            avatar-letter: root.edit-first != "" ? root.edit-first.substring(0, 1)
+                                         : root.edit-last != "" ? root.edit-last.substring(0, 1)
+                                         : "?",
+                            created-at: root.contact.created-at,
+                            updated-at: "",  // Set by Rust
+                        });
+                    }
+
+                    Rectangle {
+                        border-radius: AppTheme.shape-full;
+                        background: save-btn.pressed ? AppTheme.primary.darker(10%) : AppTheme.primary;
+                        animate background { duration: AppTheme.motion-short2; }
+
+                        Text {
+                            text: "Save";
+                            font-size: AppTheme.type-label-large / 1px * 1px;
+                            font-weight: 700;
+                            color: AppTheme.on-primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Scrollable Form ───────────────────────────────────────────────────
+        Flickable {
+            horizontal-stretch: 1;
+            vertical-stretch: 1;
+
+            VerticalLayout {
+                padding: 16px;
+                spacing: 20px;
+
+                // Avatar preview
+                Rectangle {
+                    height: 100px;
+
+                    ContactAvatar {
+                        letter: root.edit-first != "" ? root.edit-first.substring(0, 1)
+                              : root.edit-last != "" ? root.edit-last.substring(0, 1)
+                              : "+";
+                        bg-color: root.contact.avatar-color;
+                        size: 80px;
+                        x: (parent.width - self.width) / 2;
+                        y: (parent.height - self.height) / 2;
+                    }
+                }
+
+                // ── Name Section ──────────────────────────────────────────────
+                SectionLabel { text: "Name"; }
+
+                FormField {
+                    label: "First name";
+                    hint: "नाव (First name)";
+                    FormInput { text <=> root.edit-first; placeholder: "First name / पहिले नाव"; }
+                }
+
+                FormField {
+                    label: "Last name";
+                    hint: "आडनाव (Last name)";
+                    FormInput { text <=> root.edit-last; placeholder: "Last name / आडनाव"; }
+                }
+
+                // ── Phone Section ─────────────────────────────────────────────
+                SectionLabel { text: "Phone"; }
+
+                FormField {
+                    label: "Primary phone";
+                    FormInput { text <=> root.edit-phone; placeholder: "+91 XXXXX XXXXX"; input-type: InputType.number; }
+                }
+
+                FormField {
+                    label: "Secondary phone";
+                    FormInput { text <=> root.edit-phone2; placeholder: "Secondary number"; input-type: InputType.number; }
+                }
+
+                // ── Email Section ─────────────────────────────────────────────
+                SectionLabel { text: "Email"; }
+
+                FormField {
+                    label: "Email address";
+                    FormInput { text <=> root.edit-email; placeholder: "email@example.com"; input-type: InputType.email; }
+                }
+
+                // ── Work Section ──────────────────────────────────────────────
+                SectionLabel { text: "Work"; }
+
+                FormField {
+                    label: "Organization";
+                    FormInput { text <=> root.edit-org; placeholder: "Company / संस्था"; }
+                }
+
+                FormField {
+                    label: "Job title";
+                    FormInput { text <=> root.edit-title; placeholder: "Role / पद"; }
+                }
+
+                // ── Other Section ─────────────────────────────────────────────
+                SectionLabel { text: "Other"; }
+
+                FormField {
+                    label: "Website";
+                    FormInput { text <=> root.edit-website; placeholder: "https://"; input-type: InputType.url; }
+                }
+
+                FormField {
+                    label: "Group";
+                    FormInput { text <=> root.edit-group; placeholder: "Group name / गट"; }
+                }
+
+                FormField {
+                    label: "Notes";
+                    FormInput { 
+                        text <=> root.edit-notes;
+                        placeholder: "Notes / टिप्पणी";
+                    }
+                }
+
+                Rectangle { height: 80px; } // Bottom padding for FAB
+            }
+        }
+    }
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+component SectionLabel {
+    in property <string> text;
+    height: 24px;
+
+    Text {
+        text: root.text;
+        font-size: AppTheme.type-label-large / 1px * 1px;
+        font-weight: 700;
+        color: AppTheme.primary;
+        letter-spacing: 0.5px;
+        vertical-alignment: center;
+        height: parent.height;
+    }
+}
+
+component FormField {
+    in property <string> label;
+    in property <string> hint: "";
+    @children
+
+    VerticalLayout {
+        spacing: 4px;
+
+        Text {
+            text: root.label;
+            font-size: AppTheme.type-label-medium / 1px * 1px;
+            color: AppTheme.on-surface-variant;
+        }
+
+        @children
+
+        if root.hint != "": Text {
+            text: root.hint;
+            font-size: AppTheme.type-label-small / 1px * 1px;
+            color: AppTheme.on-surface-variant;
+            opacity: 0.7;
+        }
+    }
+}
+
+component FormInput {
+    in-out property <string> text: "";
+    in property <string> placeholder: "";
+    in property <InputType> input-type: InputType.text;
+
+    height: 56px;
+
+    Rectangle {
+        border-radius: AppTheme.shape-small;
+        border-width: input.has-focus ? 2px : 1px;
+        border-color: input.has-focus ? AppTheme.primary : AppTheme.outline;
+        background: AppTheme.surface;
+
+        animate border-width { duration: AppTheme.motion-short3; }
+        animate border-color { duration: AppTheme.motion-short3; }
+
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 16px;
+
+            input := TextInput {
+                text <=> root.text;
+                placeholder-text: root.placeholder;
+                font-size: AppTheme.type-body-large / 1px * 1px;
+                color: AppTheme.on-surface;
+                input-type: root.input-type;
+                vertical-alignment: center;
+                horizontal-stretch: 1;
+            }
+        }
+    }
+}

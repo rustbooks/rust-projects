@@ -1,0 +1,10 @@
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/wayland_client-ea06c69d46665105.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/conn.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/event_queue.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/globals.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libwayland_client-ea06c69d46665105.rlib: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/conn.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/event_queue.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/globals.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libwayland_client-ea06c69d46665105.rmeta: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/conn.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/event_queue.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/globals.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/conn.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/event_queue.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wayland-client-0.31.14/src/globals.rs:

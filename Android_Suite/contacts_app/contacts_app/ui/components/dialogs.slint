@@ -1,0 +1,114 @@
+// ui/components/dialogs.slint
+// Material 3 Confirm Dialog & Alert Dialog
+
+import { AppTheme } from "../themes/theme.slint";
+
+export component ConfirmDialog {
+    in property <string> title: "Confirm";
+    in property <string> message;
+    in property <string> confirm-label: "Confirm";
+    in property <string> cancel-label: "Cancel";
+    in property <bool> is-destructive: false;
+    callback confirmed;
+    callback cancelled;
+
+    // Scrim overlay
+    Rectangle {
+        background: #000000.with-alpha(0.4);
+        width: 100%;
+        height: 100%;
+
+        TouchArea {
+            clicked => { root.cancelled(); }
+        }
+    }
+
+    // Dialog card
+    Rectangle {
+        width: min(root.width - 48px, 400px);
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        border-radius: AppTheme.shape-extra-large;
+        background: AppTheme.surface-container-high;
+        drop-shadow-blur: 16px;
+        drop-shadow-offset-y: 8px;
+        drop-shadow-color: #000000.with-alpha(0.2);
+
+        VerticalLayout {
+            padding: 24px;
+            spacing: 16px;
+
+            Text {
+                text: root.title;
+                font-size: AppTheme.type-headline-small / 1px * 1px;
+                font-weight: 600;
+                color: AppTheme.on-surface;
+            }
+
+            Text {
+                text: root.message;
+                font-size: AppTheme.type-body-medium / 1px * 1px;
+                color: AppTheme.on-surface-variant;
+                wrap: word-wrap;
+            }
+
+            Rectangle { height: 8px; }
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: end;
+
+                // Cancel button
+                cancel-btn := TouchArea {
+                    height: 40px;
+                    width: cancel-text.preferred-width + 24px;
+
+                    clicked => { root.cancelled(); }
+
+                    Rectangle {
+                        border-radius: AppTheme.shape-full;
+                        background: cancel-btn.pressed ? AppTheme.on-surface.with-alpha(0.08) : transparent;
+
+                        cancel-text := Text {
+                            text: root.cancel-label;
+                            font-size: AppTheme.type-label-large / 1px * 1px;
+                            font-weight: 600;
+                            color: AppTheme.primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width;
+                            height: parent.height;
+                        }
+                    }
+                }
+
+                // Confirm button
+                confirm-btn := TouchArea {
+                    height: 40px;
+                    width: confirm-text.preferred-width + 24px;
+
+                    clicked => { root.confirmed(); }
+
+                    Rectangle {
+                        border-radius: AppTheme.shape-full;
+                        background: confirm-btn.pressed
+                            ? (root.is-destructive ? AppTheme.error.darker(10%) : AppTheme.primary.darker(10%))
+                            : (root.is-destructive ? AppTheme.error : AppTheme.primary);
+                        animate background { duration: AppTheme.motion-short2; }
+
+                        confirm-text := Text {
+                            text: root.confirm-label;
+                            font-size: AppTheme.type-label-large / 1px * 1px;
+                            font-weight: 600;
+                            color: root.is-destructive ? AppTheme.on-error : AppTheme.on-primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width;
+                            height: parent.height;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

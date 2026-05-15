@@ -1,0 +1,35 @@
+# Rust build artifacts
+/target/
+android/target/
+
+# Distribution files
+/dist/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# macOS
+.DS_Store
+
+# Android build
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# Secrets (never commit these)
+*.jks
+*.keystore
+release-key*
+key.properties
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# Cargo lock should be committed for applications (not libraries)
+# Cargo.lock  ← intentionally NOT ignored

@@ -1,0 +1,301 @@
+// ui/pages/contacts_page.slint
+// Main contacts list with search, sort, FAB, and swipe-to-delete.
+// Uses Slint's ListView for virtualized rendering (handles 10,000+ contacts).
+
+import { AppTheme } from "../themes/theme.slint";
+import { ContactEntry } from "../main.slint";
+import { SearchBar, SortChips } from "../components/search_bar.slint";
+import { FAB } from "../components/fab.slint";
+import { ContactAvatar } from "../components/contact_avatar.slint";
+
+export component ContactsPage {
+    in property <[ContactEntry]> contacts: [];
+    in property <bool> is-loading: false;
+    in-out property <string> search-query: "";
+    in-out property <string> sort-key: "first";
+    in property <bool> is-wide-screen: false;
+
+    callback contact-selected(ContactEntry);
+    callback search-changed(string);
+    callback sort-requested(string);
+    callback add-contact;
+    callback refresh;
+    callback import-clicked;
+    callback export-clicked;
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        // ── Top App Bar ───────────────────────────────────────────────────────
+        Rectangle {
+            height: 64px;
+            background: AppTheme.surface;
+            drop-shadow-blur: 4px;
+            drop-shadow-offset-y: 2px;
+            drop-shadow-color: AppTheme.outline-variant.with-alpha(0.5);
+
+            HorizontalLayout {
+                padding-left: 16px;
+                padding-right: 8px;
+                spacing: 8px;
+
+                Text {
+                    text: "Contacts";
+                    font-size: AppTheme.type-title-large / 1px * 1px;
+                    font-weight: 700;
+                    color: AppTheme.on-surface;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+
+                // Import button
+                menu-btn := TouchArea {
+                    width: 48px;
+                    height: 48px;
+                    clicked => { root.import-clicked(); }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: menu-btn.pressed ? AppTheme.on-surface.with-alpha(0.1) : transparent;
+                        width: 40px;
+                        height: 40px;
+                        x: 4px;
+                        y: 4px;
+
+                        Text {
+                            text: "⬇";
+                            font-size: 18px;
+                            color: AppTheme.on-surface-variant;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width;
+                            height: parent.height;
+                        }
+                    }
+                }
+
+                // Export button
+                export-btn := TouchArea {
+                    width: 48px;
+                    height: 48px;
+                    clicked => { root.export-clicked(); }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: export-btn.pressed ? AppTheme.on-surface.with-alpha(0.1) : transparent;
+                        width: 40px;
+                        height: 40px;
+                        x: 4px;
+                        y: 4px;
+
+                        Text {
+                            text: "⬆";
+                            font-size: 18px;
+                            color: AppTheme.on-surface-variant;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width;
+                            height: parent.height;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Search Bar ────────────────────────────────────────────────────────
+        Rectangle {
+            height: 72px;
+            background: AppTheme.surface;
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+
+            SearchBar {
+                search-text <=> root.search-query;
+                placeholder: "Search by name, number, email...";
+                text-changed(q) => { root.search-changed(q); }
+            }
+        }
+
+        // ── Sort Chips ────────────────────────────────────────────────────────
+        Rectangle {
+            height: 48px;
+            background: AppTheme.surface;
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-bottom: 8px;
+
+            SortChips {
+                active-sort <=> root.sort-key;
+                sort-changed(k) => { root.sort-requested(k); }
+            }
+        }
+
+        // ── Contact Count ─────────────────────────────────────────────────────
+        Rectangle {
+            height: 32px;
+            background: AppTheme.surface;
+            padding-left: 16px;
+            padding-right: 16px;
+
+            Text {
+                text: root.contacts.length == 0 ? "No contacts found"
+                    : root.contacts.length == 1 ? "1 contact"
+                    : root.contacts.length + " contacts";
+                font-size: AppTheme.type-body-small / 1px * 1px;
+                color: AppTheme.on-surface-variant;
+                vertical-alignment: center;
+                height: parent.height;
+            }
+        }
+
+        // ── Loading Indicator ─────────────────────────────────────────────────
+        if root.is-loading: Rectangle {
+            height: 4px;
+            background: AppTheme.surface-container;
+
+            Rectangle {
+                width: 30%;
+                height: 4px;
+                border-radius: 2px;
+                background: AppTheme.primary;
+                x: 0;
+
+                // Indeterminate progress animation
+                animate x {
+                    duration: 1200ms;
+                    iteration-count: -1;
+                    easing: ease-in-out;
+                }
+            }
+        }
+
+        // ── Contacts List (Virtualized) ───────────────────────────────────────
+        list := ListView {
+            horizontal-stretch: 1;
+            vertical-stretch: 1;
+            background: AppTheme.surface;
+
+            for contact[i] in root.contacts: ContactListItem {
+                contact: contact;
+                is-last: i == root.contacts.length - 1;
+                tapped => { root.contact-selected(contact); }
+            }
+
+            // Empty state
+            if root.contacts.length == 0 && !root.is-loading: Rectangle {
+                height: 300px;
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 16px;
+
+                    Text {
+                        text: "👤";
+                        font-size: 64px;
+                        horizontal-alignment: center;
+                        opacity: 0.3;
+                    }
+                    Text {
+                        text: root.search-query == "" ? "No contacts yet\nTap + to add one" : "No contacts found";
+                        font-size: AppTheme.type-body-large / 1px * 1px;
+                        color: AppTheme.on-surface-variant;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+    }
+
+    // ── FAB ───────────────────────────────────────────────────────────────────
+    FAB {
+        icon: "+";
+        label: "New Contact";
+        extended: root.is-wide-screen;
+        x: root.width - self.width - 16px;
+        y: root.height - self.height - 16px;
+        clicked => { root.add-contact(); }
+    }
+}
+
+// ── Individual Contact Row ────────────────────────────────────────────────────
+component ContactListItem {
+    in property <ContactEntry> contact;
+    in property <bool> is-last: false;
+    callback tapped;
+
+    height: 72px;
+
+    touch := TouchArea {
+        clicked => { root.tapped(); }
+    }
+
+    Rectangle {
+        background: touch.pressed ? AppTheme.primary.with-alpha(0.08) : transparent;
+        animate background { duration: AppTheme.motion-short2; }
+
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 16px;
+            spacing: 16px;
+
+            ContactAvatar {
+                letter: root.contact.avatar-letter;
+                bg-color: root.contact.avatar-color;
+                size: 48px;
+                y: (parent.height - self.height) / 2;
+            }
+
+            VerticalLayout {
+                alignment: center;
+                horizontal-stretch: 1;
+                spacing: 2px;
+
+                Text {
+                    text: root.contact.first-name + " " + root.contact.last-name;
+                    font-size: AppTheme.type-body-large / 1px * 1px;
+                    font-weight: 500;
+                    color: AppTheme.on-surface;
+                    overflow: elide;
+                }
+
+                Text {
+                    text: root.contact.phone-primary != "" ? root.contact.phone-primary
+                        : root.contact.email != "" ? root.contact.email
+                        : root.contact.organization;
+                    font-size: AppTheme.type-body-medium / 1px * 1px;
+                    color: AppTheme.on-surface-variant;
+                    overflow: elide;
+                }
+            }
+
+            // Favorite star
+            if root.contact.is-favorite: Text {
+                text: "★";
+                font-size: 16px;
+                color: AppTheme.tertiary;
+                vertical-alignment: center;
+            }
+
+            // Chevron
+            Text {
+                text: "›";
+                font-size: 20px;
+                color: AppTheme.on-surface-variant;
+                vertical-alignment: center;
+                opacity: 0.5;
+            }
+        }
+
+        // Divider (not shown for last item)
+        if !root.is-last: Rectangle {
+            y: parent.height - 1px;
+            height: 1px;
+            x: 80px;
+            width: parent.width - 80px;
+            background: AppTheme.outline-variant;
+            opacity: 0.5;
+        }
+    }
+}

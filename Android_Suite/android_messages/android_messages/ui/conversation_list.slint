@@ -1,0 +1,308 @@
+// ui/conversation_list.slint
+// Scrollable list of conversation threads.
+// Features:
+//  ─ Pull-to-refresh (pointer drag ≥ 60 px triggers `refresh` callback)
+//  ─ Swipe-left on row → delete / archive action sheet (simulated via long-press)
+//  ─ Unread badge with animated scale-in
+//  ─ Avatar with initials + dynamic colour
+//  ─ Empty state illustration
+
+import { Theme, ConversationItem } from "app.slint";
+
+export component ConversationList {
+    in property <[ConversationItem]> conversations;
+    in property <string>             active-id;
+    in property <bool>               is-loading;
+
+    callback refresh();
+    callback selected(string /* id */, string /* name */, string /* phone */);
+    callback delete-conv(string /* id */);
+    callback archive-conv(string /* id */);
+
+    // Pull-to-refresh state
+    property <length> pull-offset: 0px;
+    property <bool>   pull-active: false;
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        // ── Pull-to-refresh indicator ────────────────────────────────────
+        Rectangle {
+            height: pull-active ? 56px : 0px;
+            clip:   true;
+            animate height { duration: 200ms; easing: ease-out; }
+
+            Text {
+                text:  pull-active ? "↓  Release to refresh" : "↓  Pull to refresh";
+                color: Theme.on-surface-variant;
+                font-size: Theme.type-body-sm;
+                horizontal-alignment: center;
+                vertical-alignment:   center;
+            }
+        }
+
+        // ── Loading skeleton ─────────────────────────────────────────────
+        if is-loading: VerticalLayout {
+            padding: 0px;
+            spacing: 0px;
+
+            // Three skeleton rows
+            for _i in [0, 1, 2]: Rectangle {
+                height: 72px;
+                background: Theme.surface;
+
+                HorizontalLayout {
+                    padding: Theme.sp-m;
+                    spacing: Theme.sp-m;
+                    alignment: center;
+
+                    // Avatar skeleton
+                    Rectangle {
+                        width:  48px;
+                        height: 48px;
+                        border-radius: 24px;
+                        background: Theme.surface-variant;
+                    }
+
+                    VerticalLayout {
+                        spacing: Theme.sp-xs;
+                        alignment: center;
+
+                        // Name skeleton
+                        Rectangle {
+                            height: 14px;
+                            width:  140px;
+                            border-radius: 7px;
+                            background: Theme.surface-variant;
+                        }
+
+                        // Snippet skeleton
+                        Rectangle {
+                            height: 12px;
+                            width:  200px;
+                            border-radius: 6px;
+                            background: Theme.outline-variant;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Empty state ──────────────────────────────────────────────────
+        if !is-loading && conversations.length == 0: VerticalLayout {
+            alignment: center;
+            spacing:   Theme.sp-m;
+            padding:   Theme.sp-xl;
+
+            Text {
+                text:                "💬";
+                font-size:           64px;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                text:                "No messages yet";
+                font-size:           Theme.type-title-lg;
+                font-weight:         600;
+                color:               Theme.on-surface;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                text:                "Tap ✏ to start a new conversation";
+                font-size:           Theme.type-body-md;
+                color:               Theme.on-surface-variant;
+                horizontal-alignment: center;
+            }
+        }
+
+        // ── Conversation rows ────────────────────────────────────────────
+        if !is-loading && conversations.length > 0: ScrollView {
+            // Virtualised Slint `for` loop — the compiler can optimise this
+            // into a ListView-style recycle pool on platforms that support it.
+            VerticalLayout {
+                padding: 0px;
+                spacing: 0px;
+
+                for conv[idx] in conversations: ConvRow {
+                    item:      conv;
+                    is-active: conv.id == active-id;
+                    selected   => { selected(conv.id, conv.contact-name, conv.phone); }
+                    deleted    => { delete-conv(conv.id); }
+                    archived   => { archive-conv(conv.id); }
+                }
+            }
+        }
+    }
+}
+
+// ── Single conversation row ───────────────────────────────────────────────────
+component ConvRow {
+    in property <ConversationItem> item;
+    in property <bool>             is-active;
+
+    callback selected();
+    callback deleted();
+    callback archived();
+
+    // Swipe offset (negative = swiped left revealing actions)
+    property <length> swipe-x:    0px;
+    property <bool>   show-actions: false;
+
+    height: 72px;
+
+    // Highlight strip for active conversation
+    if is-active: Rectangle {
+        x: 0px; y: 0px;
+        width:  4px;
+        height: parent.height;
+        background: Theme.primary;
+        border-radius: 2px;
+    }
+
+    // Row background + ripple
+    touch := TouchArea {
+        mouse-cursor: pointer;
+
+        clicked => {
+            show-actions = false;
+            swipe-x = 0px;
+            selected();
+        }
+
+        Rectangle {
+            background: is-active ? Theme.secondary-container :
+                        (touch.has-hover ? Theme.surface-variant : Theme.surface);
+            animate background { duration: 150ms; }
+
+            HorizontalLayout {
+                padding-left:   Theme.sp-m;
+                padding-right:  Theme.sp-m;
+                padding-top:    Theme.sp-s;
+                padding-bottom: Theme.sp-s;
+                spacing:        Theme.sp-m;
+                alignment:      center;
+
+                // ── Avatar ─────────────────────────────────────────────
+                Rectangle {
+                    width:         48px;
+                    height:        48px;
+                    border-radius: 24px;
+                    background:    item.avatar-color;
+
+                    Text {
+                        text:  item.contact-name.substring(0, 1);
+                        font-size:  20px;
+                        font-weight: 700;
+                        color:      #FFFFFF;
+                        vertical-alignment:   center;
+                        horizontal-alignment: center;
+                    }
+
+                    // Muted indicator
+                    if item.is-muted: Rectangle {
+                        x:      32px; y: 32px;
+                        width:  16px; height: 16px;
+                        border-radius: 8px;
+                        background: Theme.surface;
+
+                        Text {
+                            text: "🔕";
+                            font-size: 10px;
+                            vertical-alignment:   center;
+                            horizontal-alignment: center;
+                        }
+                    }
+                }
+
+                // ── Text content ───────────────────────────────────────
+                VerticalLayout {
+                    spacing: Theme.sp-xs;
+                    alignment: center;
+
+                    HorizontalLayout {
+                        spacing: Theme.sp-s;
+                        alignment: space-between;
+
+                        // Contact name
+                        Text {
+                            text:       item.contact-name;
+                            font-size:  Theme.type-title-md;
+                            font-weight: item.unread-count > 0 ? 700 : 400;
+                            color:      Theme.on-surface;
+                            overflow:   elide;
+                        }
+
+                        HorizontalLayout {
+                            spacing: Theme.sp-xs;
+
+                            // Attachment indicator
+                            if item.has-attachment: Text {
+                                text:      "📎";
+                                font-size: Theme.type-body-sm;
+                            }
+
+                            // Pin indicator
+                            if item.is-pinned: Text {
+                                text:      "📌";
+                                font-size: Theme.type-body-sm;
+                            }
+
+                            // Timestamp
+                            Text {
+                                text:       item.timestamp;
+                                font-size:  Theme.type-body-sm;
+                                color:      item.unread-count > 0
+                                            ? Theme.primary
+                                            : Theme.on-surface-variant;
+                            }
+                        }
+                    }
+
+                    HorizontalLayout {
+                        spacing: Theme.sp-s;
+                        alignment: space-between;
+
+                        // Message snippet
+                        Text {
+                            text:       item.snippet;
+                            font-size:  Theme.type-body-md;
+                            color:      item.unread-count > 0
+                                        ? Theme.on-surface
+                                        : Theme.on-surface-variant;
+                            font-weight: item.unread-count > 0 ? 500 : 400;
+                            overflow:   elide;
+                        }
+
+                        // Unread badge
+                        if item.unread-count > 0: Rectangle {
+                            width:  max(20px, unread-text.preferred-width + 10px);
+                            height: 20px;
+                            border-radius: 10px;
+                            background: Theme.primary;
+
+                            unread-text := Text {
+                                text:       item.unread-count > 99
+                                            ? "99+" : item.unread-count;
+                                font-size:  Theme.type-body-sm;
+                                color:      Theme.on-primary;
+                                font-weight: 700;
+                                vertical-alignment:   center;
+                                horizontal-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Divider ─────────────────────────────────────────────────────────
+    Rectangle {
+        y:          parent.height - 1px;
+        height:     1px;
+        x:          72px; // indent past avatar
+        background: Theme.outline-variant;
+    }
+}

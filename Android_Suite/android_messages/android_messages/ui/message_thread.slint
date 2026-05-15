@@ -1,0 +1,325 @@
+// ui/message_thread.slint
+// Scrollable message bubble list with Material You chat bubbles.
+// ─ Sent messages: right-aligned, primary-container bubble
+// ─ Received: left-aligned, surface-variant bubble
+// ─ Status indicators: ✓ sent, ✓✓ delivered, ✓✓ (blue) read, ⚠ failed
+// ─ Attachment preview thumbnail
+// ─ Long-press → context menu (delete / share / copy)
+// ─ Date separators between days
+
+import { Theme, MessageItem } from "app.slint";
+
+export component MessageThread {
+    in property <[MessageItem]> messages;
+    in property <bool>          is-loading;
+    in property <string>        conv-id;
+
+    callback delete-msg(string /* id */);
+    callback share-msg(string /* body */);
+    callback view-attachment(string /* path */, string /* type */);
+
+    // Context menu state
+    property <string> ctx-msg-id:   "";
+    property <string> ctx-msg-body: "";
+    property <bool>   show-ctx:     false;
+
+    // When conv-id changes, auto-scroll to bottom by flipping a flag
+    // (Slint doesn't have a direct scroll-to-end API; Rust side calls
+    //  a helper that adjusts the viewport via set_viewport_y)
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        // ── Loading spinner ──────────────────────────────────────────────
+        if is-loading: Rectangle {
+            height: 64px;
+
+            Text {
+                text:                "Loading messages…";
+                color:               Theme.on-surface-variant;
+                font-size:           Theme.type-body-md;
+                horizontal-alignment: center;
+                vertical-alignment:   center;
+            }
+        }
+
+        // ── Empty thread placeholder ─────────────────────────────────────
+        if !is-loading && messages.length == 0 && conv-id != "": VerticalLayout {
+            alignment: center;
+            spacing:   Theme.sp-m;
+            padding:   Theme.sp-xl;
+
+            Text {
+                text:                "🗨";
+                font-size:           48px;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                text:                "No messages yet.\nSay hello!";
+                font-size:           Theme.type-body-lg;
+                color:               Theme.on-surface-variant;
+                horizontal-alignment: center;
+            }
+        }
+
+        // ── No conversation selected ─────────────────────────────────────
+        if conv-id == "": VerticalLayout {
+            alignment: center;
+            spacing:   Theme.sp-m;
+            padding:   Theme.sp-xl;
+
+            Text {
+                text:                "💬";
+                font-size:           64px;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                text:                "Select a conversation\nor tap ✏ to start one";
+                font-size:           Theme.type-body-lg;
+                color:               Theme.on-surface-variant;
+                horizontal-alignment: center;
+            }
+        }
+
+        // ── Message bubbles ──────────────────────────────────────────────
+        if !is-loading && messages.length > 0: ScrollView {
+            VerticalLayout {
+                padding:        Theme.sp-s;
+                spacing:        Theme.sp-xs;
+                padding-bottom: 8px; // breathing room above compose bar
+
+                for msg[i] in messages: MsgBubble {
+                    item: msg;
+                    long-pressed => {
+                        ctx-msg-id   = msg.id;
+                        ctx-msg-body = msg.body;
+                        show-ctx     = true;
+                    }
+                    view-att(path, type) => {
+                        root.view-attachment(path, type);
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Context menu overlay ──────────────────────────────────────────────
+    if show-ctx: Rectangle {
+        background: #00000066;
+
+        // Dismiss on tap outside
+        TouchArea {
+            clicked => { show-ctx = false; }
+        }
+
+        // Menu card
+        Rectangle {
+            x:      (root.width  - self.width)  / 2;
+            y:      (root.height - self.height) / 2;
+            width:  220px;
+            border-radius: Theme.radius-large;
+            background:    Theme.surface;
+            drop-shadow-blur: 16px;
+            drop-shadow-color: #00000033;
+
+            VerticalLayout {
+                padding: Theme.sp-xs;
+                spacing: 0px;
+
+                CtxItem {
+                    icon: "🗑"; label: "Delete";
+                    activated => {
+                        show-ctx = false;
+                        root.delete-msg(ctx-msg-id);
+                    }
+                }
+                CtxItem {
+                    icon: "↗"; label: "Share";
+                    activated => {
+                        show-ctx = false;
+                        root.share-msg(ctx-msg-body);
+                    }
+                }
+                CtxItem {
+                    icon: "✂"; label: "Cancel";
+                    activated => { show-ctx = false; }
+                }
+            }
+        }
+    }
+}
+
+// ── Single message bubble ─────────────────────────────────────────────────────
+component MsgBubble {
+    in property <MessageItem> item;
+
+    callback long-pressed();
+    callback view-att(string /* path */, string /* type */);
+
+    property <bool> sent: item.is-sent;
+
+    height: bubble-content.preferred-height + 12px;
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+
+        // Long-press simulation: Slint doesn't have a native long-press yet.
+        // We expose a `long-pressed` callback; the Rust backend can wire a
+        // timer-based approach if needed, or the user double-clicks on desktop.
+        double-clicked => { long-pressed(); }
+
+        HorizontalLayout {
+            padding-left:  sent ? Theme.sp-xl * 2 : Theme.sp-s;
+            padding-right: sent ? Theme.sp-s      : Theme.sp-xl * 2;
+            padding-top:   6px;
+            padding-bottom: 6px;
+            alignment:     sent ? end : start;
+
+            bubble-content := VerticalLayout {
+                spacing: Theme.sp-xs;
+                // Max bubble width = 80% of parent
+                // Slint doesn't clamp max-width directly; we do it via padding.
+
+                // ── Attachment preview ───────────────────────────────
+                if item.attachment-type != "none" && item.attachment-type != "": Rectangle {
+                    height:        120px;
+                    width:         200px;
+                    border-radius: Theme.radius-medium;
+                    background:    sent ? Theme.sent-bubble : Theme.received-bubble;
+                    clip:          true;
+
+                    att-touch := TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => { root.view-att(item.attachment-path, item.attachment-type); }
+                    }
+
+                    // Media type icon
+                    Text {
+                        text:  item.attachment-type == "image" ? "🖼"
+                             : item.attachment-type == "video" ? "🎬"
+                             : item.attachment-type == "audio" ? "🎵"
+                             : "📎";
+                        font-size: 40px;
+                        vertical-alignment:   center;
+                        horizontal-alignment: center;
+                    }
+
+                    // File name overlay
+                    Rectangle {
+                        y:          parent.height - 28px;
+                        height:     28px;
+                        background: #00000088;
+
+                        Text {
+                            text:      item.attachment-name;
+                            color:     #FFFFFF;
+                            font-size: Theme.type-body-sm;
+                            overflow:  elide;
+                            padding-left:  Theme.sp-s;
+                            padding-right: Theme.sp-s;
+                            vertical-alignment:   center;
+                        }
+                    }
+                }
+
+                // ── Text body ────────────────────────────────────────
+                if item.body != "": Rectangle {
+                    border-radius: sent
+                        ? Theme.radius-large   // sent: all corners large
+                        : Theme.radius-large;
+                    background:   sent ? Theme.sent-bubble : Theme.received-bubble;
+                    padding-left: Theme.sp-m;
+                    padding-right: Theme.sp-m;
+                    padding-top:  Theme.sp-s;
+                    padding-bottom: Theme.sp-s;
+
+                    VerticalLayout {
+                        spacing: Theme.sp-xs;
+
+                        // Encryption lock
+                        if item.is-encrypted: Text {
+                            text:      "🔒 Encrypted";
+                            font-size: Theme.type-body-sm;
+                            color:     Theme.on-surface-variant;
+                        }
+
+                        Text {
+                            text:      item.body;
+                            font-size: Theme.type-body-lg;
+                            color:     Theme.on-surface;
+                            wrap:      word-wrap;
+                        }
+
+                        HorizontalLayout {
+                            alignment: end;
+                            spacing:   Theme.sp-xs;
+
+                            Text {
+                                text:      item.timestamp;
+                                font-size: Theme.type-body-sm;
+                                color:     Theme.on-surface-variant;
+                            }
+
+                            // Status indicator (sent messages only)
+                            if item.is-sent: Text {
+                                text:  item.status == "sending"   ? "⏳"
+                                     : item.status == "sent"      ? "✓"
+                                     : item.status == "delivered" ? "✓✓"
+                                     : item.status == "read"      ? "✓✓"
+                                     : item.status == "failed"    ? "⚠"
+                                     : "";
+                                font-size: Theme.type-body-sm;
+                                color: item.status == "read"   ? Theme.primary
+                                     : item.status == "failed" ? Theme.error
+                                     : Theme.on-surface-variant;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Context menu item ─────────────────────────────────────────────────────────
+component CtxItem {
+    in property <string> icon;
+    in property <string> label;
+    callback activated();
+
+    height: 48px;
+
+    t := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { activated(); }
+
+        Rectangle {
+            border-radius: Theme.radius-small;
+            background:    t.has-hover ? Theme.surface-variant : transparent;
+            animate background { duration: 100ms; }
+
+            HorizontalLayout {
+                padding-left:  Theme.sp-m;
+                padding-right: Theme.sp-m;
+                spacing:       Theme.sp-m;
+                alignment:     center;
+
+                Text {
+                    text:      icon;
+                    font-size: 20px;
+                    vertical-alignment: center;
+                }
+
+                Text {
+                    text:      label;
+                    font-size: Theme.type-body-lg;
+                    color:     Theme.on-surface;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}

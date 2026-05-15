@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  AndroidManifest.xml
+  ───────────────────────────────────────────────────────────────────────────
+  Minimal-permission manifest.  Only CALL_PHONE is declared; no background
+  location, no contacts sync (we manage our own encrypted store), no telemetry.
+
+  Permissions:
+    CALL_PHONE  — required to initiate calls on a real device
+    READ_PHONE_STATE — optional; allows detecting incoming calls
+    VIBRATE     — haptic feedback on dial-pad key press
+
+  On the Play Store these must match the declared purpose in the Data Safety
+  section of the store listing.
+  ───────────────────────────────────────────────────────────────────────────
+-->
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.rustdialer.app">
+
+    <!-- Minimum permissions — request at runtime before use -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"
+                     android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Required hardware — phone only (filters out tablet-only listings) -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Dialer"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.RustDialer"
+        android:hardwareAccelerated="true"
+        android:resizeableActivity="true"
+        android:windowSoftInputMode="adjustResize">
+
+        <!--
+          NativeActivity is the bridge between Android and our Rust/Slint code.
+          Slint's Android backend extends NativeActivity to handle the lifecycle.
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|density"
+            android:launchMode="singleTop">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Handle tel: links from other apps -->
+            <intent-filter>
+                <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="tel" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="rust_dialer" />
+        </activity>
+    </application>
+
+</manifest>

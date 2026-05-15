@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  res/values/styles.xml
+  Material You theme wrapper — the actual UI is Slint-rendered, so this
+  theme is just used for the system status bar and nav bar tinting.
+-->
+<resources>
+    <style name="Theme.RustDialer" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Status bar: transparent so Slint can paint edge-to-edge -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

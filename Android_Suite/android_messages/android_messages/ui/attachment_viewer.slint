@@ -1,0 +1,84 @@
+// ui/attachment_viewer.slint
+// Full-screen attachment viewer.
+// Images: displayed with zoom-fit.
+// Videos / Audio: shows media icon + path.
+// Files: shows file icon + name.
+
+import { Theme } from "app.slint";
+
+export component AttachmentViewer {
+    in property <string> path;
+    in property <string> media-type;
+    callback closed();
+
+    // Scrim with close-on-tap
+    Rectangle {
+        background: #000000DD;
+
+        TouchArea {
+            clicked => { root.closed(); }
+        }
+
+        VerticalLayout {
+            alignment: center;
+            spacing:   Theme.sp-m;
+            padding:   Theme.sp-l;
+
+            // Media display
+            if media-type == "image": Image {
+                source: @image-url("../assets/placeholder.png"); // replaced at runtime
+                width:  min(root.width - Theme.sp-xl * 2, 600px);
+                height: 400px;
+                image-fit: contain;
+            }
+
+            if media-type != "image": Rectangle {
+                width:         160px;
+                height:        160px;
+                border-radius: Theme.radius-xl;
+                background:    Theme.surface-variant;
+                x:             (root.width - self.width) / 2;
+
+                Text {
+                    text:  media-type == "video" ? "🎬"
+                         : media-type == "audio" ? "🎵"
+                         : "📎";
+                    font-size: 72px;
+                    vertical-alignment:   center;
+                    horizontal-alignment: center;
+                }
+            }
+
+            // File path
+            Text {
+                text:                path;
+                font-size:           Theme.type-body-sm;
+                color:               #FFFFFF;
+                horizontal-alignment: center;
+                wrap:                word-wrap;
+            }
+
+            // Close button
+            TouchArea {
+                height:  48px;
+                width:   120px;
+                x:       (root.width - self.width) / 2;
+                mouse-cursor: pointer;
+                clicked  => { root.closed(); }
+
+                Rectangle {
+                    border-radius: Theme.radius-xl;
+                    background:    #FFFFFF22;
+
+                    Text {
+                        text:       "Close";
+                        font-size:  Theme.type-title-md;
+                        color:      #FFFFFF;
+                        vertical-alignment:   center;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+    }
+}

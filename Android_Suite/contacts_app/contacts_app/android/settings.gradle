@@ -1,0 +1,11 @@
+// android/settings.gradle
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "ContactsApp"
+include ':app'

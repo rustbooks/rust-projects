@@ -1,0 +1,334 @@
+// ui/pages/contact_detail_page.slint
+// Full contact detail view with Material 3 card layout.
+// Actions: call, message, email, edit, delete, favorite toggle.
+
+import { AppTheme } from "../themes/theme.slint";
+import { ContactEntry } from "../main.slint";
+import { ContactAvatar } from "../components/contact_avatar.slint";
+
+export component ContactDetailPage {
+    in property <ContactEntry> contact;
+    in property <bool> is-wide-screen: false;
+    callback back-clicked;
+    callback edit-clicked;
+    callback favorite-toggled;
+    callback delete-clicked;
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        // ── App Bar ───────────────────────────────────────────────────────────
+        Rectangle {
+            height: 64px;
+            background: AppTheme.surface;
+
+            HorizontalLayout {
+                padding-left: 4px;
+                padding-right: 4px;
+                spacing: 4px;
+
+                // Back button (hidden in wide-screen dual pane)
+                if !root.is-wide-screen: back-btn := TouchArea {
+                    width: 48px;
+                    height: 48px;
+                    clicked => { root.back-clicked(); }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: back-btn.pressed ? AppTheme.on-surface.with-alpha(0.1) : transparent;
+                        width: 40px; height: 40px; x: 4px; y: 4px;
+
+                        Text {
+                            text: "←";
+                            font-size: 20px;
+                            color: AppTheme.on-surface;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+
+                Rectangle { horizontal-stretch: 1; } // Spacer
+
+                // Favorite toggle
+                fav-btn := TouchArea {
+                    width: 48px; height: 48px;
+                    clicked => { root.favorite-toggled(); }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: fav-btn.pressed ? AppTheme.on-surface.with-alpha(0.1) : transparent;
+                        width: 40px; height: 40px; x: 4px; y: 4px;
+
+                        Text {
+                            text: root.contact.is-favorite ? "★" : "☆";
+                            font-size: 20px;
+                            color: root.contact.is-favorite ? AppTheme.tertiary : AppTheme.on-surface-variant;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+
+                // Edit button
+                edit-btn := TouchArea {
+                    width: 48px; height: 48px;
+                    clicked => { root.edit-clicked(); }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: edit-btn.pressed ? AppTheme.on-surface.with-alpha(0.1) : transparent;
+                        width: 40px; height: 40px; x: 4px; y: 4px;
+
+                        Text {
+                            text: "✎";
+                            font-size: 18px;
+                            color: AppTheme.on-surface-variant;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+
+                // Delete button
+                del-btn := TouchArea {
+                    width: 48px; height: 48px;
+                    clicked => { root.delete-clicked(); }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: del-btn.pressed ? AppTheme.error.with-alpha(0.1) : transparent;
+                        width: 40px; height: 40px; x: 4px; y: 4px;
+
+                        Text {
+                            text: "🗑";
+                            font-size: 18px;
+                            color: AppTheme.error;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Scrollable Content ────────────────────────────────────────────────
+        scroll := Flickable {
+            horizontal-stretch: 1;
+            vertical-stretch: 1;
+            viewport-height: content.preferred-height;
+
+            content := VerticalLayout {
+                padding: 16px;
+                spacing: 16px;
+
+                // ── Hero Avatar Card ──────────────────────────────────────────
+                Rectangle {
+                    border-radius: AppTheme.shape-extra-large;
+                    background: AppTheme.surface-container;
+                    height: 160px;
+
+                    VerticalLayout {
+                        alignment: center;
+                        spacing: 12px;
+
+                        ContactAvatar {
+                            letter: root.contact.avatar-letter;
+                            bg-color: root.contact.avatar-color;
+                            size: 80px;
+                            x: (parent.width - self.width) / 2;
+                        }
+
+                        Text {
+                            text: root.contact.first-name + " " + root.contact.last-name;
+                            font-size: AppTheme.type-headline-small / 1px * 1px;
+                            font-weight: 600;
+                            color: AppTheme.on-surface;
+                            horizontal-alignment: center;
+                        }
+
+                        if root.contact.organization != "": Text {
+                            text: root.contact.job-title != "" 
+                                ? root.contact.job-title + " · " + root.contact.organization
+                                : root.contact.organization;
+                            font-size: AppTheme.type-body-medium / 1px * 1px;
+                            color: AppTheme.on-surface-variant;
+                            horizontal-alignment: center;
+                        }
+                    }
+                }
+
+                // ── Quick Action Buttons ──────────────────────────────────────
+                HorizontalLayout {
+                    spacing: 12px;
+
+                    if root.contact.phone-primary != "": ActionChip { icon: "📞"; label: "Call"; }
+                    if root.contact.phone-primary != "": ActionChip { icon: "💬"; label: "Message"; }
+                    if root.contact.email != "": ActionChip { icon: "✉"; label: "Email"; }
+                    if root.contact.website != "": ActionChip { icon: "🌐"; label: "Web"; }
+                }
+
+                // ── Contact Info Card ─────────────────────────────────────────
+                InfoCard {
+                    title: "Phone";
+                    visible: root.contact.phone-primary != "";
+
+                    InfoRow { label: "Mobile"; value: root.contact.phone-primary; }
+                    if root.contact.phone-secondary != "": InfoRow {
+                        label: "Other";
+                        value: root.contact.phone-secondary;
+                    }
+                }
+
+                if root.contact.email != "": InfoCard {
+                    title: "Email";
+                    InfoRow { label: "Personal"; value: root.contact.email; }
+                }
+
+                if root.contact.organization != "": InfoCard {
+                    title: "Work";
+                    if root.contact.organization != "": InfoRow {
+                        label: "Company";
+                        value: root.contact.organization;
+                    }
+                    if root.contact.job-title != "": InfoRow {
+                        label: "Title";
+                        value: root.contact.job-title;
+                    }
+                }
+
+                if root.contact.website != "": InfoCard {
+                    title: "Web";
+                    InfoRow { label: "Website"; value: root.contact.website; }
+                }
+
+                if root.contact.group != "": InfoCard {
+                    title: "Group";
+                    InfoRow { label: "Group"; value: root.contact.group; }
+                }
+
+                if root.contact.notes != "": InfoCard {
+                    title: "Notes";
+                    Rectangle {
+                        padding: 12px;
+                        Text {
+                            text: root.contact.notes;
+                            font-size: AppTheme.type-body-medium / 1px * 1px;
+                            color: AppTheme.on-surface;
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+
+                // ── Metadata ──────────────────────────────────────────────────
+                if root.contact.created-at != "": Rectangle {
+                    height: 24px;
+                    Text {
+                        text: "Added " + root.contact.created-at;
+                        font-size: AppTheme.type-label-small / 1px * 1px;
+                        color: AppTheme.on-surface-variant;
+                        opacity: 0.6;
+                        horizontal-alignment: center;
+                        width: parent.width;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Info Card component
+component InfoCard {
+    in property <string> title;
+    in property <bool> visible: true;
+    @children
+
+    if root.visible: Rectangle {
+        border-radius: AppTheme.shape-large;
+        background: AppTheme.surface-container;
+
+        VerticalLayout {
+            padding: 16px;
+            spacing: 0px;
+
+            Text {
+                text: root.title;
+                font-size: AppTheme.type-label-medium / 1px * 1px;
+                font-weight: 600;
+                color: AppTheme.primary;
+                letter-spacing: 0.5px;
+            }
+
+            Rectangle { height: 8px; }
+
+            @children
+        }
+    }
+}
+
+// Info row within a card
+component InfoRow {
+    in property <string> label;
+    in property <string> value;
+
+    height: 44px;
+
+    HorizontalLayout {
+        spacing: 12px;
+
+        Text {
+            text: root.label;
+            font-size: AppTheme.type-body-medium / 1px * 1px;
+            color: AppTheme.on-surface-variant;
+            width: 80px;
+            vertical-alignment: center;
+        }
+
+        Text {
+            text: root.value;
+            font-size: AppTheme.type-body-medium / 1px * 1px;
+            color: AppTheme.on-surface;
+            font-weight: 500;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+            overflow: elide;
+        }
+    }
+}
+
+// Quick action chip
+component ActionChip {
+    in property <string> icon;
+    in property <string> label;
+    horizontal-stretch: 1;
+
+    btn := TouchArea {
+        Rectangle {
+            border-radius: AppTheme.shape-small;
+            background: btn.pressed ? AppTheme.secondary-container.darker(5%) : AppTheme.secondary-container;
+            height: 56px;
+
+            VerticalLayout {
+                alignment: center;
+                spacing: 4px;
+
+                Text {
+                    text: root.icon;
+                    font-size: 20px;
+                    horizontal-alignment: center;
+                }
+                Text {
+                    text: root.label;
+                    font-size: AppTheme.type-label-small / 1px * 1px;
+                    color: AppTheme.on-secondary-container;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,74 @@
+[package]
+name = "contacts-app"
+version = "1.0.0"
+edition = "2021"
+authors = ["Contacts App Team"]
+description = "Cross-platform Contacts Manager with Material You design"
+license = "MIT"
+readme = "README.md"
+keywords = ["contacts", "slint", "material", "android", "cross-platform"]
+
+# Minimal binary size optimization
+[profile.release]
+opt-level = "z"          # Optimize for size
+lto = true               # Link-time optimization
+codegen-units = 1        # Single codegen unit for better LTO
+panic = "abort"          # No unwinding = smaller binary
+strip = true             # Strip debug symbols
+overflow-checks = false  # Disable overflow checks in release
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[[bin]]
+name = "contacts-app"
+path = "src/main.rs"
+
+[lib]
+name = "contacts_app"
+path = "src/lib.rs"
+
+[dependencies]
+# ── UI Framework ──────────────────────────────────────────────────
+slint = { version = "1.9", features = ["backend-winit", "renderer-femtovg"] }
+
+# ── Serialization ─────────────────────────────────────────────────
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# ── Encryption (AES-256-GCM) ──────────────────────────────────────
+ring = "0.17"
+base64 = "0.22"
+
+# ── UUID Generation ───────────────────────────────────────────────
+uuid = { version = "1", features = ["v4"] }
+
+# ── Date/Time ─────────────────────────────────────────────────────
+chrono = { version = "0.4", features = ["serde"], default-features = false }
+
+# ── CSV Import/Export ─────────────────────────────────────────────
+csv = "1"
+
+# ── Logging ───────────────────────────────────────────────────────
+log = "0.4"
+env_logger = { version = "0.11", default-features = false }
+
+# ── Error Handling ────────────────────────────────────────────────
+thiserror = "1"
+anyhow = "1"
+
+# ── Unicode / Devanagari normalization ────────────────────────────
+unicode-normalization = "0.1"
+
+[target.'cfg(not(target_os = "android"))'.dependencies]
+rfd = { version = "0.15", default-features = false, features = ["xdg-portal"] }
+
+[build-dependencies]
+slint-build = "1.9"
+
+[dev-dependencies]
+tempfile = "3"
+
+[target.'cfg(target_os = "android")'.dependencies]
+android_logger = "0.14"

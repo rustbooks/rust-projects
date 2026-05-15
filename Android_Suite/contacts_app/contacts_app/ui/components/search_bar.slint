@@ -1,0 +1,136 @@
+// ui/components/search_bar.slint
+// Material 3 Search Bar with Devanagari / Marathi support
+// Uses Slint's built-in TextInput which supports Unicode natively.
+
+import { AppTheme } from "../themes/theme.slint";
+
+export component SearchBar {
+    in-out property <string> search-text: "";
+    in property <string> placeholder: "Search contacts...";  // supports Devanagari in UI
+    out property <bool> is-focused: input.has-focus;
+    callback text-changed(string);
+    callback cleared;
+
+    height: 56px;
+
+    Rectangle {
+        border-radius: AppTheme.shape-full;
+        background: AppTheme.surface-container-high;
+        border-width: is-focused ? 2px : 0px;
+        border-color: AppTheme.primary;
+
+        animate border-width { duration: AppTheme.motion-short3; }
+        animate background { duration: AppTheme.motion-short3; }
+
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 8px;
+            spacing: 8px;
+
+            // Search icon
+            Text {
+                text: "🔍";
+                font-size: 18px;
+                vertical-alignment: center;
+                width: 24px;
+            }
+
+            // Text input — supports all Unicode including Devanagari
+            input := TextInput {
+                text <=> root.search-text;
+                placeholder-text: root.placeholder;
+                font-size: AppTheme.type-body-large / 1px * 1px;
+                color: AppTheme.on-surface;
+                horizontal-stretch: 1;
+                vertical-alignment: center;
+
+                edited => {
+                    root.text-changed(self.text);
+                }
+            }
+
+            // Clear button (shown when text is not empty)
+            if root.search-text != "": TouchArea {
+                width: 40px;
+                clicked => {
+                    root.search-text = "";
+                    root.text-changed("");
+                    root.cleared();
+                }
+
+                Rectangle {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 16px;
+                    background: parent.pressed ? AppTheme.on-surface.with-alpha(0.12) : transparent;
+
+                    Text {
+                        text: "✕";
+                        font-size: 16px;
+                        color: AppTheme.on-surface-variant;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                        width: parent.width;
+                        height: parent.height;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Sort chip row for contacts list
+export component SortChips {
+    in-out property <string> active-sort: "first";
+    callback sort-changed(string);
+
+    height: 40px;
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+
+        SortChip { label: "First Name"; sort-key: "first"; active-sort <=> root.active-sort; sort-changed(k) => { root.sort-changed(k); } }
+        SortChip { label: "Last Name"; sort-key: "last"; active-sort <=> root.active-sort; sort-changed(k) => { root.sort-changed(k); } }
+        SortChip { label: "Phone"; sort-key: "phone"; active-sort <=> root.active-sort; sort-changed(k) => { root.sort-changed(k); } }
+    }
+}
+
+component SortChip {
+    in property <string> label;
+    in property <string> sort-key;
+    in-out property <string> active-sort;
+    callback sort-changed(string);
+
+    property <bool> is-active: root.active-sort == root.sort-key;
+
+    height: 32px;
+    width: label-text.preferred-width + 24px;
+
+    Rectangle {
+        border-radius: AppTheme.shape-small;
+        background: is-active ? AppTheme.secondary-container : AppTheme.surface-container;
+        border-width: is-active ? 0px : 1px;
+        border-color: AppTheme.outline-variant;
+
+        animate background { duration: AppTheme.motion-short3; }
+
+        TouchArea {
+            clicked => {
+                root.active-sort = root.sort-key;
+                root.sort-changed(root.sort-key);
+            }
+        }
+
+        label-text := Text {
+            text: root.label + (is-active ? " ↑" : "");
+            font-size: AppTheme.type-label-large / 1px * 1px;
+            font-weight: is-active ? 600 : 400;
+            color: is-active ? AppTheme.on-secondary-container : AppTheme.on-surface-variant;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            width: parent.width;
+            height: parent.height;
+        }
+    }
+}

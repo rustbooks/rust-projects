@@ -1,0 +1,31 @@
+# android/Cargo.toml
+# Android-specific crate that wraps the main app as a cdylib.
+# This is the entry point compiled by cargo-ndk into a .so file
+# that the Android Activity loads.
+#
+# Build with:
+#   cargo ndk -t arm64-v8a -t x86_64 -o app/src/main/jniLibs build --release
+#
+# See README.md for full Android build instructions.
+
+[package]
+name = "contacts-app-android"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+name = "contacts_app"
+
+[dependencies]
+contacts-app = { path = ".." }
+slint = { version = "1.9", features = ["backend-android-activity"] }
+android_logger = "0.14"
+log = "0.4"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

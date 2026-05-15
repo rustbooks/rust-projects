@@ -1,0 +1,107 @@
+// ui/themes/theme.slint
+// Material You (Material 3) design tokens.
+// Dynamic color theming — swap palette here for brand customization.
+// All color values follow M3 tonal palette guidelines.
+
+export global AppTheme {
+    // ── Primary Tonal Palette ─────────────────────────────────────────────────
+    out property <color> primary: #1565C0;                 // Blue 800
+    out property <color> on-primary: #FFFFFF;
+    out property <color> primary-container: #D6E4FF;       // Blue 100
+    out property <color> on-primary-container: #001945;
+
+    // ── Secondary Tonal Palette ───────────────────────────────────────────────
+    out property <color> secondary: #5C6BC0;               // Indigo 400
+    out property <color> on-secondary: #FFFFFF;
+    out property <color> secondary-container: #E8EAF6;     // Indigo 50
+    out property <color> on-secondary-container: #1A1F5E;
+
+    // ── Tertiary ──────────────────────────────────────────────────────────────
+    out property <color> tertiary: #00838F;
+    out property <color> on-tertiary: #FFFFFF;
+    out property <color> tertiary-container: #E0F7FA;
+    out property <color> on-tertiary-container: #002528;
+
+    // ── Error ─────────────────────────────────────────────────────────────────
+    out property <color> error: #B00020;
+    out property <color> on-error: #FFFFFF;
+    out property <color> error-container: #FDECEA;
+
+    // ── Surface / Background ──────────────────────────────────────────────────
+    out property <color> surface: #FAFCFF;
+    out property <color> on-surface: #191C20;
+    out property <color> surface-variant: #DFE2EB;
+    out property <color> on-surface-variant: #43474F;
+    out property <color> surface-container: #EEF1FA;
+    out property <color> surface-container-low: #F4F7FF;
+    out property <color> surface-container-high: #E8EBF4;
+    out property <color> surface-container-highest: #E2E5EE;
+
+    // ── Outline ───────────────────────────────────────────────────────────────
+    out property <color> outline: #73777F;
+    out property <color> outline-variant: #C3C7CF;
+
+    // ── Inverse ───────────────────────────────────────────────────────────────
+    out property <color> inverse-surface: #2E3135;
+    out property <color> inverse-on-surface: #F0F0F4;
+    out property <color> inverse-primary: #ADC6FF;
+
+    // ── Avatar accent colors (for contact initials) ───────────────────────────
+    out property <[color]> avatar-colors: [
+        #1565C0, #C62828, #2E7D32, #6A1B9A,
+        #E65100, #00695C, #37474F, #AD1457,
+        #0277BD, #558B2F, #4527A0, #F57F17,
+    ];
+
+    // ── Elevation shadows ──────────────────────────────────────────────────────
+    out property <length> elevation-1: 1px;
+    out property <length> elevation-2: 3px;
+    out property <length> elevation-3: 6px;
+    out property <length> elevation-4: 8px;
+
+    // ── Shape / Corner radii (M3) ─────────────────────────────────────────────
+    out property <length> shape-none: 0px;
+    out property <length> shape-extra-small: 4px;
+    out property <length> shape-small: 8px;
+    out property <length> shape-medium: 12px;
+    out property <length> shape-large: 16px;
+    out property <length> shape-extra-large: 28px;
+    out property <length> shape-full: 50px;
+
+    // ── Typography ────────────────────────────────────────────────────────────
+    out property <length> type-display-large: 57px;
+    out property <length> type-display-medium: 45px;
+    out property <length> type-headline-large: 32px;
+    out property <length> type-headline-medium: 28px;
+    out property <length> type-headline-small: 24px;
+    out property <length> type-title-large: 22px;
+    out property <length> type-title-medium: 16px;
+    out property <length> type-title-small: 14px;
+    out property <length> type-body-large: 16px;
+    out property <length> type-body-medium: 14px;
+    out property <length> type-body-small: 12px;
+    out property <length> type-label-large: 14px;
+    out property <length> type-label-medium: 12px;
+    out property <length> type-label-small: 11px;
+
+    // ── Motion durations (M3) ─────────────────────────────────────────────────
+    out property <duration> motion-short1: 50ms;
+    out property <duration> motion-short2: 100ms;
+    out property <duration> motion-short3: 150ms;
+    out property <duration> motion-short4: 200ms;
+    out property <duration> motion-medium1: 250ms;
+    out property <duration> motion-medium2: 300ms;
+    out property <duration> motion-medium3: 350ms;
+    out property <duration> motion-medium4: 400ms;
+    out property <duration> motion-long1: 450ms;
+    out property <duration> motion-long2: 500ms;
+
+    // ── Spacing ───────────────────────────────────────────────────────────────
+    out property <length> spacing-1: 4px;
+    out property <length> spacing-2: 8px;
+    out property <length> spacing-3: 12px;
+    out property <length> spacing-4: 16px;
+    out property <length> spacing-5: 20px;
+    out property <length> spacing-6: 24px;
+    out property <length> spacing-8: 32px;
+}

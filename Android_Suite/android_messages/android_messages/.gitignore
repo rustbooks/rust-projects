@@ -1,0 +1,31 @@
+# Rust build artefacts
+/target/
+Cargo.lock        # include for binaries; exclude for libraries
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Android build
+*.apk
+*.aab
+*.keystore
+local.properties
+
+# Encryption keys (NEVER commit)
+*.key
+.msg.key
+
+# Logs
+*.log
+
+# Editor backup files
+*~

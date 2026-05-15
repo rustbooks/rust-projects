@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  AndroidManifest.xml
+  Minimal permissions model: only request what is strictly needed.
+  READ_SMS / SEND_SMS are runtime permissions (Android 6+); the app
+  prompts for them at the moment they are first needed, not at install.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.slint.androidmessages">
+
+    <!-- ── Permissions ──────────────────────────────────────────────── -->
+    <!-- READ_SMS: display received messages from the system SMS provider -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <!-- SEND_SMS: send outgoing messages via the system -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <!-- RECEIVE_SMS: get notified of new messages via BroadcastReceiver -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <!-- INTERNET: future: rich media, RCS, backup sync -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- READ_CONTACTS: look up contact names from phone numbers -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- READ_EXTERNAL_STORAGE (Android ≤ 12) / READ_MEDIA_* (Android 13+) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- ── Feature requirements ─────────────────────────────────────── -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DynamicColor"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules">
+
+        <!-- Main activity (Slint renders into a NativeActivity / GameActivity) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
+            android:windowSoftInputMode="adjustResize">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Handle "Send via…" from other apps -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+
+            <!-- Handle incoming SMS deep links -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sms" />
+            </intent-filter>
+        </activity>
+
+        <!-- BroadcastReceiver for incoming SMS -->
+        <receiver android:name=".SmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

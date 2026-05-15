@@ -1,0 +1,25 @@
+# .cargo/config.toml
+# Linker and build configuration for minimal binary size.
+
+[build]
+# Use lld linker on Linux for faster builds and smaller binaries
+# (fallback to system linker if lld not available)
+
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+
+[target.aarch64-linux-android]
+linker = "aarch64-linux-android-clang"
+
+[target.armv7-linux-androideabi]
+linker = "armv7a-linux-androideabi-clang"
+
+[target.x86_64-linux-android]
+linker = "x86_64-linux-android-clang"
+
+# Strip all symbols in release for Android targets
+[profile.release]
+strip = true

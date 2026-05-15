@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AndroidManifest.xml
+    Minimal permissions — we only request what we need:
+    - No CONTACTS permission: we manage our own storage, not the system contacts DB
+    - READ_EXTERNAL_STORAGE: only needed for import from Downloads (Android < 10)
+    - WRITE_EXTERNAL_STORAGE: only needed for export (Android < 10)
+    On Android 10+, scoped storage means no permission needed for app-specific files.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.contacts.app"
+    android:versionCode="1"
+    android:versionName="1.0.0">
+
+    <uses-sdk
+        android:minSdkVersion="26"
+        android:targetSdkVersion="34" />
+
+    <!-- Storage permissions for import/export (not needed for internal storage) -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+
+    <application
+        android:label="Contacts"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.App"
+        android:allowBackup="true"
+        android:supportsRtl="true"
+        android:networkSecurityConfig="@xml/network_security_config">
+
+        <activity
+            android:name="com.contacts.app.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
+            android:windowSoftInputMode="adjustResize">
+
+            <!-- App entry point (home screen launcher) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Handle vCard file open -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/x-vcard" />
+                <data android:mimeType="text/vcard" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

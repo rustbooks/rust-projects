@@ -1,0 +1,244 @@
+// ui/settings_panel.slint
+// Full-screen settings overlay with Material You cards.
+// Sections: Appearance / Security / About
+
+import { Theme } from "app.slint";
+
+export component SettingsPanel {
+    in-out property <bool> dark-mode;
+    in-out property <bool> encryption-on;
+    callback toggle-dark();
+    callback closed();
+
+    // Full-screen scrim + slide-up card
+    Rectangle {
+        background: #00000066;
+
+        TouchArea {
+            clicked => { root.closed(); }
+        }
+
+        Rectangle {
+            y:             parent.height - self.height;
+            width:         min(parent.width, 560px);
+            x:             (parent.width - self.width) / 2;
+            height:        parent.height * 0.85;
+            border-radius: Theme.radius-xl;
+            background:    Theme.surface;
+            clip:          true;
+
+            VerticalLayout {
+                padding:    Theme.sp-l;
+                spacing:    Theme.sp-m;
+
+                // Handle bar
+                Rectangle {
+                    x:      (parent.width - self.width) / 2;
+                    width:  40px;
+                    height: 4px;
+                    border-radius: 2px;
+                    background: Theme.outline-variant;
+                }
+
+                // Title
+                Text {
+                    text:       "Settings";
+                    font-size:  Theme.type-title-lg;
+                    font-weight: 700;
+                    color:      Theme.on-surface;
+                }
+
+                ScrollView {
+                    VerticalLayout {
+                        spacing: Theme.sp-m;
+
+                        // ── Appearance section ───────────────────────────
+                        SectionCard {
+                            title: "Appearance";
+
+                            SettingsRow {
+                                icon:    "🌙";
+                                label:   "Dark Mode";
+                                sublabel: "Switch to dark colour scheme";
+                                has-toggle: true;
+                                toggle-value <=> root.dark-mode;
+                                toggled => { root.toggle-dark(); }
+                            }
+                        }
+
+                        // ── Security section ─────────────────────────────
+                        SectionCard {
+                            title: "Security";
+
+                            SettingsRow {
+                                icon:    "🔒";
+                                label:   "End-to-End Encryption";
+                                sublabel: "AES-256-GCM local encryption";
+                                has-toggle: true;
+                                toggle-value <=> root.encryption-on;
+                            }
+
+                            SettingsRow {
+                                icon:    "🗑";
+                                label:   "Clear Message Cache";
+                                sublabel: "Remove locally cached data";
+                                has-toggle: false;
+                            }
+                        }
+
+                        // ── About section ────────────────────────────────
+                        SectionCard {
+                            title: "About";
+
+                            SettingsRow {
+                                icon:    "ℹ";
+                                label:   "Version";
+                                sublabel: "1.0.0 — Built with Rust + Slint";
+                                has-toggle: false;
+                            }
+
+                            SettingsRow {
+                                icon:    "⚖";
+                                label:   "Open Source Licences";
+                                sublabel: "Third-party libraries";
+                                has-toggle: false;
+                            }
+                        }
+                    }
+                }
+
+                // Close button
+                TouchArea {
+                    height: 48px;
+                    mouse-cursor: pointer;
+                    clicked => { root.closed(); }
+
+                    Rectangle {
+                        border-radius: Theme.radius-xl;
+                        background:   close-touch.has-hover ? Theme.secondary-container : Theme.surface-variant;
+                        animate background { duration: 150ms; }
+                        close-touch := TouchArea { }
+
+                        Text {
+                            text:       "Done";
+                            font-size:  Theme.type-title-md;
+                            font-weight: 600;
+                            color:      Theme.on-secondary-container;
+                            vertical-alignment:   center;
+                            horizontal-alignment: center;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+component SectionCard {
+    in property <string> title;
+    @children
+
+    VerticalLayout {
+        spacing: 0px;
+
+        // Section header
+        Text {
+            text:       title;
+            font-size:  Theme.type-body-sm;
+            font-weight: 700;
+            color:      Theme.primary;
+            padding-bottom: Theme.sp-s;
+        }
+
+        Rectangle {
+            border-radius: Theme.radius-large;
+            background:    Theme.surface-variant;
+            clip:          true;
+
+            VerticalLayout {
+                padding:  Theme.sp-xs;
+                spacing:  0px;
+                @children
+            }
+        }
+    }
+}
+
+component SettingsRow {
+    in property <string> icon;
+    in property <string> label;
+    in property <string> sublabel;
+    in property <bool>   has-toggle;
+    in-out property <bool> toggle-value;
+    callback toggled();
+
+    height: 64px;
+
+    t := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            if has-toggle {
+                toggle-value = !toggle-value;
+                root.toggled();
+            }
+        }
+
+        Rectangle {
+            border-radius: Theme.radius-medium;
+            background:    t.has-hover ? Theme.outline-variant : transparent;
+            animate background { duration: 100ms; }
+
+            HorizontalLayout {
+                padding:   Theme.sp-m;
+                spacing:   Theme.sp-m;
+                alignment: center;
+
+                Text {
+                    text:      icon;
+                    font-size: 24px;
+                    vertical-alignment: center;
+                }
+
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 2px;
+
+                    Text {
+                        text:       label;
+                        font-size:  Theme.type-body-lg;
+                        color:      Theme.on-surface;
+                        font-weight: 500;
+                    }
+
+                    Text {
+                        text:      sublabel;
+                        font-size: Theme.type-body-sm;
+                        color:     Theme.on-surface-variant;
+                    }
+                }
+
+                // Toggle switch
+                if has-toggle: Rectangle {
+                    width:  52px; height: 32px;
+                    border-radius: 16px;
+                    background: toggle-value ? Theme.primary : Theme.outline;
+                    animate background { duration: 200ms; }
+
+                    // Thumb
+                    Rectangle {
+                        width:  28px; height: 28px;
+                        x:      toggle-value ? 22px : 2px;
+                        y:      2px;
+                        border-radius: 14px;
+                        background: #FFFFFF;
+                        drop-shadow-blur: 4px;
+                        drop-shadow-color: #00000033;
+                        animate x { duration: 200ms; easing: ease-in-out; }
+                    }
+                }
+            }
+        }
+    }
+}

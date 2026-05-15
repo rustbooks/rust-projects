@@ -1,0 +1,239 @@
+// ui/pages/groups_page.slint
+// Groups management page — create, view, delete contact groups.
+
+import { AppTheme } from "../themes/theme.slint";
+import { ContactEntry, GroupEntry } from "../main.slint";
+
+export component GroupsPage {
+    in property <[GroupEntry]> groups: [];
+    in property <[ContactEntry]> contacts: [];
+    callback group-selected(GroupEntry);
+    callback save-group(GroupEntry);
+    callback delete-group(string);
+    callback back-clicked;
+
+    property <bool> show-add-group: false;
+    property <string> new-group-name: "";
+
+    VerticalLayout {
+        // ── App Bar ───────────────────────────────────────────────────────────
+        Rectangle {
+            height: 64px;
+            background: AppTheme.surface;
+            drop-shadow-blur: 4px;
+            drop-shadow-offset-y: 2px;
+            drop-shadow-color: AppTheme.outline-variant.with-alpha(0.4);
+
+            HorizontalLayout {
+                padding-left: 16px;
+                padding-right: 8px;
+
+                Text {
+                    text: "Groups";
+                    font-size: AppTheme.type-title-large / 1px * 1px;
+                    font-weight: 700;
+                    color: AppTheme.on-surface;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+
+                add-btn := TouchArea {
+                    width: 48px; height: 48px;
+                    clicked => { root.show-add-group = !root.show-add-group; }
+
+                    Rectangle {
+                        border-radius: 24px;
+                        background: add-btn.pressed ? AppTheme.primary.with-alpha(0.1) : transparent;
+                        width: 40px; height: 40px; x: 4px; y: 4px;
+
+                        Text {
+                            text: root.show-add-group ? "✕" : "+";
+                            font-size: 22px;
+                            color: AppTheme.primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Add Group Form ────────────────────────────────────────────────────
+        if root.show-add-group: Rectangle {
+            height: 72px;
+            background: AppTheme.primary-container;
+            padding: 12px;
+
+            HorizontalLayout {
+                spacing: 12px;
+
+                Rectangle {
+                    horizontal-stretch: 1;
+                    border-radius: AppTheme.shape-small;
+                    border-width: 2px;
+                    border-color: AppTheme.primary;
+                    background: AppTheme.surface;
+                    padding-left: 12px;
+
+                    input := TextInput {
+                        text <=> root.new-group-name;
+                        placeholder-text: "Group name / गट नाव";
+                        font-size: AppTheme.type-body-large / 1px * 1px;
+                        color: AppTheme.on-surface;
+                        vertical-alignment: center;
+                        horizontal-stretch: 1;
+                    }
+                }
+
+                save-btn := TouchArea {
+                    width: 80px;
+                    clicked => {
+                        if root.new-group-name != "" {
+                            root.save-group({
+                                id: "",
+                                name: root.new-group-name,
+                                count: 0,
+                                color: AppTheme.primary,
+                            });
+                            root.new-group-name = "";
+                            root.show-add-group = false;
+                        }
+                    }
+
+                    Rectangle {
+                        border-radius: AppTheme.shape-small;
+                        background: AppTheme.primary;
+
+                        Text {
+                            text: "Add";
+                            font-size: AppTheme.type-label-large / 1px * 1px;
+                            font-weight: 700;
+                            color: AppTheme.on-primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                            width: parent.width; height: parent.height;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Groups List ───────────────────────────────────────────────────────
+        ListView {
+            horizontal-stretch: 1;
+            vertical-stretch: 1;
+
+            for group in root.groups: GroupRow {
+                group: group;
+                tapped => { root.group-selected(group); }
+                delete-tapped => { root.delete-group(group.id); }
+            }
+
+            if root.groups.length == 0: Rectangle {
+                height: 200px;
+                VerticalLayout {
+                    alignment: center;
+                    spacing: 12px;
+
+                    Text { text: "⊞"; font-size: 48px; horizontal-alignment: center; opacity: 0.3; }
+                    Text {
+                        text: "No groups yet\nTap + to create one";
+                        font-size: AppTheme.type-body-medium / 1px * 1px;
+                        color: AppTheme.on-surface-variant;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+    }
+}
+
+component GroupRow {
+    in property <GroupEntry> group;
+    callback tapped;
+    callback delete-tapped;
+
+    height: 64px;
+
+    touch := TouchArea { clicked => { root.tapped(); } }
+
+    Rectangle {
+        background: touch.pressed ? AppTheme.primary.with-alpha(0.08) : transparent;
+        animate background { duration: AppTheme.motion-short2; }
+
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 16px;
+            spacing: 16px;
+
+            // Color dot
+            Rectangle {
+                width: 44px;
+                height: 44px;
+                border-radius: 22px;
+                background: root.group.color.with-alpha(0.15);
+                y: (parent.height - self.height) / 2;
+
+                Rectangle {
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 10px;
+                    background: root.group.color;
+                    x: (parent.width - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                }
+            }
+
+            VerticalLayout {
+                alignment: center;
+                horizontal-stretch: 1;
+
+                Text {
+                    text: root.group.name;
+                    font-size: AppTheme.type-body-large / 1px * 1px;
+                    font-weight: 500;
+                    color: AppTheme.on-surface;
+                }
+                Text {
+                    text: root.group.count + " contacts";
+                    font-size: AppTheme.type-body-small / 1px * 1px;
+                    color: AppTheme.on-surface-variant;
+                }
+            }
+
+            // Delete
+            del-btn := TouchArea {
+                width: 40px; height: 40px;
+                clicked => { root.delete-tapped(); }
+
+                Text {
+                    text: "🗑";
+                    font-size: 16px;
+                    color: AppTheme.error;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    width: parent.width; height: parent.height;
+                }
+            }
+
+            Text {
+                text: "›";
+                font-size: 20px;
+                color: AppTheme.on-surface-variant;
+                vertical-alignment: center;
+                opacity: 0.5;
+            }
+        }
+
+        // Divider
+        Rectangle {
+            y: parent.height - 1px;
+            height: 1px;
+            x: 76px;
+            width: parent.width - 76px;
+            background: AppTheme.outline-variant;
+            opacity: 0.5;
+        }
+    }
+}

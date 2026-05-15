@@ -1,0 +1,55 @@
+// ui/components/toast.slint
+// Material 3 Snackbar / Toast notification
+
+import { AppTheme } from "../themes/theme.slint";
+
+export component ToastNotification {
+    in property <string> message;
+    in property <bool> is-error: false;
+    callback dismissed;
+
+    // Position at bottom
+    y: root.height - self.preferred-height - 24px;
+    x: (root.width - self.preferred-width) / 2;
+
+    // Auto-dismiss after 3s (triggered from Rust via timer)
+    Rectangle {
+        border-radius: AppTheme.shape-small;
+        background: root.is-error ? AppTheme.error-container : AppTheme.inverse-surface;
+        drop-shadow-blur: 8px;
+        drop-shadow-offset-y: 4px;
+        drop-shadow-color: #000000.with-alpha(0.25);
+        padding: 14px;
+
+        HorizontalLayout {
+            padding-left: 16px;
+            padding-right: 8px;
+            spacing: 8px;
+
+            Text {
+                text: root.message;
+                font-size: AppTheme.type-body-medium / 1px * 1px;
+                color: root.is-error ? AppTheme.on-error : AppTheme.inverse-on-surface;
+                vertical-alignment: center;
+                horizontal-stretch: 1;
+            }
+
+            dismiss-btn := TouchArea {
+                width: 40px;
+                height: 40px;
+                clicked => { root.dismissed(); }
+
+                Text {
+                    text: "✕";
+                    font-size: 14px;
+                    color: root.is-error ? AppTheme.on-error : AppTheme.inverse-on-surface;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                    width: parent.width;
+                    height: parent.height;
+                    opacity: 0.7;
+                }
+            }
+        }
+    }
+}

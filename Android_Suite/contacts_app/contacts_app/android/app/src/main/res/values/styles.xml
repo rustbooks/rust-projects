@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- android/app/src/main/res/values/styles.xml -->
+<!-- Minimal theme: Slint draws everything; Android only provides the window chrome. -->
+<resources>
+    <!-- Transparent system bars so Slint can draw edge-to-edge -->
+    <style name="Theme.App" parent="android:Theme.NoTitleBar.Fullscreen">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- Status bar color matches our Material surface -->
+        <item name="android:statusBarColor">#FAFCFF</item>
+        <item name="android:navigationBarColor">#EEF1FA</item>
+    </style>
+</resources>

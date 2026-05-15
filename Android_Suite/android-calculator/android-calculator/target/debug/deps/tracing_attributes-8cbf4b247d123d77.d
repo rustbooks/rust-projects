@@ -1,0 +1,7 @@
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/tracing_attributes-8cbf4b247d123d77.d: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/attr.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/expand.rs
+
+/home/tech/Documents/Android_Suite/android-calculator/android-calculator/target/debug/deps/libtracing_attributes-8cbf4b247d123d77.so: /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/lib.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/attr.rs /home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/expand.rs
+
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/lib.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/attr.rs:
+/home/tech/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tracing-attributes-0.1.31/src/expand.rs:
